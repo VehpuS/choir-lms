@@ -1,6 +1,6 @@
 ## Status
 
-**Exploration with a plan, not yet verified on a device (2026-11-15).** The first draft recorded findings only. A second pass read WebKit's source and native audio projects and concluded the fix had to be native. The maintainer then retested a browser DAW (Soundtrap) on a phone: it plays while recording without the problem. So a web fix exists, and this change now looks for it in the web app. The native findings are kept in `native-playback-follow-ups`.
+**Cause narrowed on the device, fix not yet chosen (2026-11-15).** The first draft recorded findings only. A second pass read WebKit's source and native audio projects and concluded the fix had to be native. The maintainer then retested a browser DAW (Soundtrap) on a phone: it plays while recording without the problem. So a web fix exists, and this change now looks for it in the web app. The native findings are kept in `native-playback-follow-ups`.
 
 ## Why
 
@@ -19,11 +19,14 @@ Details and sources are in `design.md`.
 
 ## What Changes
 
-1. **Control and no-code checks on the device** (the Soundtrap test pinned down; a composite track and a pitch-shifted track with pitch detection on).
-2. **A sound lab in the web app** (Settings > Microphone, experimental): a stereo test signal that makes the call mode obvious, one switch for each difference from a browser DAW, and a readout of what opened. Tried on the phone from GitHub Pages.
-3. **The fix the lab points to.** Most likely one of: routing the playing element through an audio context while a microphone is open (small; the pitch shifter already builds that graph), one shared audio context for capture and playback, or opening the phone's microphone by exact id. If only a full Web Audio transport for single tracks works, that becomes its own change.
-4. **Remove the "Sound while listening" setting.**
-5. **If nothing works,** a notice where the microphone is turned on in iPhone and iPad browsers, and a WebKit bug report with the lab's readout.
+Device results so far (2026-11-15): with pitch detection on, a composite track, which plays through Web Audio, stays clear on the earbuds. The thin sound therefore comes with media element playback while a microphone is open, and the capture side and the session type are left alone.
+
+1. **One more check on the device, no code:** a single track after a pitch shift and back to 0, which routes its element through an audio context.
+2. **The fix that check points to:**
+   - if clear, route the playing element through the playback context while a microphone is open (small; the pitch shifter already builds that graph);
+   - if not, play single tracks through the Web Audio engine while a microphone is open (large; its own change, based on the composite engine).
+3. **Remove the "Sound while listening" setting.**
+4. **Only if neither is acceptable,** a notice where the microphone is turned on in iPhone and iPad browsers, and a WebKit bug report.
 
 ## Capabilities
 
@@ -33,7 +36,7 @@ Details and sources are in `design.md`.
 
 ## Impact
 
-- `packages/mobile-rehearsal-player`: a sound lab screen under Settings; then, depending on the lab, `library/pitch/pcm-source.web.ts`, `library/playback/shaping/` (the element-to-context graph), `components/audio-session/` (removal of `audio-route-store` and the `AudioRoute` branches), `library/pitch/microphone-choice/`.
-- `tools/browser-session`: a scenario for the lab's controls and for the chosen fix as far as a browser without Bluetooth can show it (what the page builds, not what iOS does); `microphone-audio-route` is removed with the setting.
+- `packages/mobile-rehearsal-player`: `library/playback/shaping/` (the element-to-context graph, built when a microphone opens), `components/audio-session/` (removal of `audio-route-store` and the `AudioRoute` branches), Settings > Microphone.
+- `tools/browser-session`: a scenario asserting what the page builds while a microphone is open; `microphone-audio-route` is removed with the setting.
 - `native-playback-follow-ups` 1.12 and 1.13: the native session findings are recorded there.
 - No new dependencies.

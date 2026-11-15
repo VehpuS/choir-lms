@@ -108,66 +108,67 @@ Two checks need no code, in the deployed app, with the earbuds and pitch detecti
 - **Play a composite track.** It plays through Web Audio only. Clear sound there supports hypothesis 1.
 - **Shift a track's pitch by a semitone and set it back to 0.** From then on that element plays through an `AudioContext` (the dry path). Clear sound after that also supports hypothesis 1 and points at a small fix.
 
+### 5. Device results (maintainer, 2026-11-15)
+
+iPhone 17 Pro, the maintainer's regular Bluetooth earbuds, pitch detection on:
+
+- **A composite track played clear, including with its pitch changed.** Composites play through Web Audio only (`create-web-composite-engine.web.ts`), with the microphone set up exactly as for a single track: its own context, its silent output, the soft input request and the page's `play-and-record` type. So hypotheses 2, 3 and 4 are not the cause, and **hypothesis 1 holds: the thin sound comes with playback through a media element on the browser's native output while a microphone is open. Web Audio playback is not affected.** (Prepared stems are mono, so this shows full-band sound, not stereo.)
+- **Soundtrap:** same earbuds, in a browser tab (not the home-screen app). The material was mono recordings layered, so stereo could not be judged; which microphone it recorded from was not checked. It agrees with the composite result (a Web Audio transport stays clear) and adds nothing beyond it.
+- **Not yet run:** check (b), a single track after a pitch shift and back to 0 (the element routed through an `AudioContext`). It tells whether routing the element into Web Audio is enough, or whether the element has to go.
+- **Seen on the way, parked** (`tasks.md`, Follow-ups): the composite did not keep playing in the background.
+
 ## Goals / Non-Goals
 
 **Goals**
 
 - In the web app on the maintainer's iPhone with Bluetooth earbuds, a queue plays clear for its whole length while pitch detection listens, and recording over a track stays clear.
-- Find the working configuration by listening on the device, with a control (Soundtrap) on the same phone and earbuds, before changing the playback or capture path.
+- Change the playback path only as far as the device results require.
 
 **Non-Goals**
 
 - A native audio path. Native parity comes after the web app is stable (maintainer, 2026-11-15); the native findings (Findings 2 and 3) are recorded in `native-playback-follow-ups` 1.12 and 1.13.
-- Recording from the earbuds' microphone at high quality.
+- Changing how the microphone is captured: the composite result shows the capture side is fine as it is.
+- Stereo on Bluetooth while listening is not yet shown either way (the clear cases so far were mono material).
 
 ## Decisions
 
-### Decision 1: The fix is sought in the web app
+### Decision 1: The fix is in the web app's playback path, not in capture or the session
 
-Soundtrap shows it can be done there (Findings 4). The native session (play-and-record with A2DP only) stays the known-good fallback and is kept with the native follow-ups, not built here.
+Findings 5: with the same capture arrangement, Web Audio playback is clear and media element playback is not. The session type, the input choice and the microphone's context are left alone.
 
-### Decision 2: A sound lab in the web app, used on the device, decides the configuration
+### Decision 2: One more no-code check picks between a small and a large fix
 
-CI cannot hear a Bluetooth route, and the earlier attempts changed one thing per release and were judged by ear on a music track. The lab is a page in the deployed web app (Settings > Microphone > `Sound lab`, marked experimental) so it can be tried on the phone from GitHub Pages with no build:
+Check (b) (task 1.2): play a single track with pitch detection on, shift its pitch by a semitone and set it back to 0, and listen across a pause, a resume and the next song.
 
-- **A test signal that makes the call mode obvious:** a tone that alternates left and right with high-frequency content. In the hands-free mode it is mono and dull; no judgement of "thin" is needed.
-- **One switch per difference in Findings 4**, each independent:
-  - playback: media element / Web Audio in its own context / Web Audio in the microphone's context;
-  - microphone: the system's choice / the phone's microphone by `exact` id, with the label of the input that really opened shown;
-  - microphone graph: silent gain to the destination (today) / a media-stream destination / the playback context;
-  - session type: none / `play-and-record`;
-  - processing constraints: all off (today) / the browser's defaults;
-  - order: context first, then the microphone, and the reverse.
-- **A readout** of what the page can see: the opened input's label and settings, each context's sample rate and state, `navigator.audioSession.type`, and a level meter to show the microphone still hears.
-- **A result line to copy** (the switch states and the readout), so a session's findings can be pasted back into this document.
+- **Clear:** routing the element into an `AudioContext` is enough. Fix (a) below.
+- **Still thin:** the element itself (its start, or its native output next to capture) is the trigger even when its sound goes through Web Audio. Fix (b) below.
+- **Clear until the next song, then thin again:** each new element needs the graph before it starts; still fix (a), with that ordering as the thing to get right.
 
-The lab is the smallest thing that can falsify each hypothesis; it carries no product behavior, and it is removed or kept behind the experimental mark once the fix ships.
+The sound lab of the earlier revision is dropped: the composite result answered what its switches were for. A smaller device aid is kept as an option only if check (b) cannot be judged by ear.
 
-### Decision 3: The fix follows the lab, most likely one of these
+### Decision 3: The two candidate fixes
 
-Written now so the cost is visible; chosen in task 2.1 from what was heard.
+- **(a) While a microphone is open, the playing element goes through the playback context.** `web-pitch-shifter-core.ts` already builds this graph (element source, dry path to the destination) on the first pitch shift; the change is to build it when a capture hold opens, and for each element the queue creates while it is open. Small.
+  - `createMediaElementSource` reroutes an element for good, so an element that was routed stays routed after the microphone closes; that is today's behavior after any pitch shift.
+  - The context adds its latency to playback; the recording clock-anchor fit is rechecked on the device (task 4.2).
+  - Background and lock-screen playback keep working as they do after a pitch shift today, because the element still drives the transport.
+- **(b) While a microphone is open, single tracks play through the Web Audio engine.** The composite engine already plays stems from one clock with gain, speed and pitch, behind the same player seam; a single track would be played as a one-stem composite while a capture hold is open, and handed back to the element when it closes. Large: decoding or preparing the track before it can start, seek and loop parity, the hand-over at a position without an audible jump, and background playback, which the composite engine does not do today (Follow-ups). This would be written as its own change before any code.
 
-- **(a) Element through the playback context while a microphone is open** (if hypothesis 1 holds and the dry-path check is clear). The pitch shifter already builds that graph; the change is to build it when listening starts and not only on the first pitch shift. Small. Cost: `createMediaElementSource` permanently reroutes an element, and the graph adds the context's latency to playback.
-- **(b) One shared context** for capture and the app's Web Audio (if hypothesis 2 holds): the microphone taps into the context that already plays, with no second output. Medium; touches `pcm-source.web.ts`, the piano, the pitch shifter and the composite engine's context ownership.
-- **(c) The phone's microphone by `exact` id** when earbuds are connected (if hypothesis 3 holds). Small; `microphone-choice` already has the picker.
-- **(d) A Web Audio transport for single tracks** (if only pure Web Audio playback is clear and (a) is not). Large: the track player's web path, caching, shaping and lock-screen transport all sit on the media element; the composite engine is the model. This would be its own change.
-- **(e) No session type from the page** (if hypothesis 4 holds). Small, but the piano's `playback` request for the silent switch must keep working.
+Whichever is chosen, the "Sound while listening" setting is removed: its options cannot differ in a useful way (Findings 1), and the cause is elsewhere.
 
-Whatever is chosen, the "Sound while listening" setting is removed: its three options cannot differ in a useful way (Findings 1).
+### Decision 4: If neither is acceptable, the app says so
 
-### Decision 4: If nothing in the lab is clear, the app says so
-
-Then Soundtrap's result has a cause not listed here; the lab's readout and the Soundtrap control go into a WebKit bug report, and the web app shows a notice where the microphone is turned on in iPhone and iPad browsers (Bluetooth earbuds sound thin while the app listens; the speaker or wired earphones sound right). The spec keeps this as the fallback requirement.
+A notice where the microphone is turned on in iPhone and iPad browsers (Bluetooth earbuds sound thin on single tracks while the app listens; the speaker or wired earphones sound right), and a WebKit bug report: a media element playing while a microphone is open degrades Bluetooth output where Web Audio playback does not.
 
 ## Risks / Trade-offs
 
-- **The Soundtrap test may not be the same case** (other headphones, or the hands-free mode being good enough on those earbuds to pass unnoticed). Mitigation: task 1.1 repeats it with the lab's test signal habits (hard-panned material) on the same earbuds before any code.
-- **The working configuration may be the large one (d).** Mitigation: the two no-code checks and the lab tell this before anything is built; (d) would be proposed as its own change.
-- **Routing the element through a context changes playback for everyone who listens,** including latency against the recording clock. Mitigation: only while a microphone is open, and the recording alignment (clock-anchor fit) is rechecked on the device.
-- **Results by ear on one phone and one pair of earbuds.** Mitigation: the copied result line records the iOS version, the opened input and the switch states; a second pair of earbuds is tried if available.
+- **Check (b) may fail,** leaving the large fix. Mitigation: it is a two-minute check before any code, and fix (b) is proposed as its own change with the composite engine as its base.
+- **Routing every element through a context while listening** changes latency against the recording clock and keeps a context running. Mitigation: only from the moment a microphone opens; alignment rechecked on the device.
+- **Results by ear on one phone and one pair of earbuds,** on mono material. Mitigation: verify with a wide stereo track (task 4.1) and, if available, a second pair of earbuds.
+- **CI cannot hear any of this.** Browser scenarios can only assert what the page builds (the element is routed through the context while a microphone is open); the device pass is the real check.
 
 ## Open Questions
 
-1. The details of the Soundtrap test (task 1.1): same earbuds, stereo or not, which microphone, tab or home-screen app.
+1. The result of check (b).
 2. The iOS version and the earbuds' model.
-3. Whether the lab stays in Settings after the fix (as a support tool for singers' reports) or goes.
+3. Whether composite playback in the background is expected to work today (Follow-ups F1), since fix (b) would inherit it.

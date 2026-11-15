@@ -6,26 +6,30 @@
 
 ## 1. On the device, no code
 
-- [ ] 1.1 Maintainer: pin down the Soundtrap test with the same Bluetooth earbuds: is playback stereo and full while recording (use a hard-panned or wide track), which microphone does it record from (tap the phone, then an earbud), Safari tab or home-screen app; also the iOS version and the earbuds' model
-- [ ] 1.2 Maintainer, deployed web app, earbuds, pitch detection on: (a) play a composite track; (b) play a track, shift its pitch by one semitone, set it back to 0, and keep listening across the next pause and resume. Note which stay clear
-- [ ] 1.3 Record both results in `design.md` (Findings 4) and reorder the hypotheses
+- [x] 1.1 Maintainer: the Soundtrap test (2026-11-15): same earbuds, browser tab; mono material, so stereo not judged; which microphone it recorded from not checked. Superseded as evidence by 1.2(a). The iOS version and the earbuds' model are still to be noted
+- [ ] 1.2 Maintainer, deployed web app, earbuds, pitch detection on:
+  - [x] (a) a composite track: clear, including with its pitch changed (2026-11-15)
+  - [ ] (b) a single track: start it, shift its pitch by one semitone, set it back to 0, and keep listening across a pause, a resume and the next song in the queue. Note whether it stays clear, and whether the next song starts thin again
+- [x] 1.3 Record the results in `design.md` (Findings 5) and narrow the hypotheses to the media element
 
-## 2. Sound lab (web)
+## 2. Choose the fix
 
-- [ ] 2.1 Sound lab screen under Settings > Microphone, marked experimental: the left and right test signal, the switches of design Decision 2 (playback path, microphone, microphone graph, session type, processing constraints, order), the readout and the result line to copy; pure model with specs, and a browser scenario for the controls and the readout
-- [ ] 2.2 Maintainer, on the phone with the earbuds: find the switch states that stay stereo and clear with the level meter moving; paste the result lines here
-- [ ] 2.3 Checkpoint: choose the fix from design Decision 3 with the maintainer, update `design.md` and the tasks of group 3 to the chosen one; if it is the Web Audio transport for single tracks, stop and propose that as its own change
-- [ ] 2.4 Look up WebKit bug 311451; if the lab shows a trigger (for example a media element start while capturing), add it there or file a new bug with the result lines
+- [ ] 2.1 Checkpoint after 1.2(b): fix (a) (route the element through the playback context while a microphone is open) if it stayed clear; otherwise stop and propose fix (b) (single tracks through the Web Audio engine while a microphone is open) as its own change. Update `design.md` and group 3
+- [ ] 2.2 Look up WebKit bug 311451 and add the finding (media element playback degrades on Bluetooth while capturing, Web Audio playback does not), or file a new bug
 
-## 3. The fix (written out after 2.3)
+## 3. The fix (written for fix (a); rewritten at 2.1 if it is (b))
 
-- [ ] 3.1 Implement the chosen configuration in the app's capture and playback path, only while a microphone is open, with specs for the model and a browser scenario for what the page builds
-- [ ] 3.2 Remove "Sound while listening": `audio-route-store`, the Settings control, the `AudioRoute` branches of the arbiter, their specs and the `microphone-audio-route` scenario; the arbiter keeps `playback` for the piano and `play-and-record` while capturing unless 2.3 decided otherwise
-- [ ] 3.3 If nothing in the lab was clear: the notice where the microphone is turned on in iPhone and iPad browsers, with a browser scenario (design Decision 4)
-- [ ] 3.4 Decide whether the lab stays (experimental) or is removed; update `docs/mobile-cross-platform-audio-playback.md` with the capture and playback arrangement and why
+- [ ] 3.1 Build the element-to-context graph when a capture hold opens and for each element created while one is open (the pitch shifter's graph, dry path), with specs for the ordering (hold before element, element before hold, a new element mid-hold) and a browser scenario asserting the playing element is routed through the context while the microphone is open
+- [ ] 3.2 Remove "Sound while listening": `audio-route-store`, the Settings control, the `AudioRoute` branches of the arbiter, their specs and the `microphone-audio-route` scenario; the arbiter keeps `playback` for the piano and `play-and-record` while capturing
+- [ ] 3.3 Only if neither fix is acceptable: the notice where the microphone is turned on in iPhone and iPad browsers, with a browser scenario (design Decision 4)
+- [ ] 3.4 Update `docs/mobile-cross-platform-audio-playback.md` with the playback arrangement while a microphone is open and why
 
 ## 4. Verify
 
-- [ ] 4.1 Maintainer's iPhone with Bluetooth earbuds, home-screen web app: a queue with pitch detection on stays clear across songs, pause and resume; the piano is still audible with the silent switch on; pitch detection still hears
+- [ ] 4.1 Maintainer's iPhone with Bluetooth earbuds, home-screen web app: a queue (including a wide stereo track) with pitch detection on stays clear across songs, pause and resume, and keeps playing in the background as it does today; the piano is still audible with the silent switch on; pitch detection still hears
 - [ ] 4.2 Same setup: recording over a playing track stays clear and the take is aligned to the track
 - [ ] 4.3 Chrome on a Mac: playback, pitch detection and recording unchanged
+
+## Follow-ups
+
+- [ ] F1 Composite playback stopped when the app went to the background (maintainer's iPhone, home-screen web app, Bluetooth earbuds, pitch detection on, 2026-11-15, seen during 1.2(a)). Not known yet whether it also stops with pitch detection off, or whether it is expected (the composite engine plays through Web Audio with no media element). Check against `composite-tracks` and `docs/mobile-cross-platform-audio-playback.md`; it matters here because fix (b) would inherit it
