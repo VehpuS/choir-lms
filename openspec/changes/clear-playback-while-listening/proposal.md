@@ -1,6 +1,6 @@
 ## Status
 
-**Cause narrowed on the device, fix not yet chosen (2026-11-15).** The first draft recorded findings only. A second pass read WebKit's source and native audio projects and concluded the fix had to be native. The maintainer then retested a browser DAW (Soundtrap) on a phone: it plays while recording without the problem. So a web fix exists, and this change now looks for it in the web app. The native findings are kept in `native-playback-follow-ups`.
+**Cause found on the device; fix proposed, scope to confirm (2026-11-15).** The first draft recorded findings only. A second pass read WebKit's source and native audio projects and concluded the fix had to be native. The maintainer then retested a browser DAW (Soundtrap) on a phone: it plays while recording without the problem. So a web fix exists, and this change now looks for it in the web app. The native findings are kept in `native-playback-follow-ups`.
 
 ## Why
 
@@ -19,14 +19,10 @@ Details and sources are in `design.md`.
 
 ## What Changes
 
-Device results so far (2026-11-15): with pitch detection on, a composite track, which plays through Web Audio, stays clear on the earbuds. The thin sound therefore comes with media element playback while a microphone is open, and the capture side and the session type are left alone.
+Device results (2026-11-15), with pitch detection on and the same earbuds: a composite track, which plays through Web Audio, stays clear; a single track stays thin even when its media element is routed through an audio context. So a playing media element is the trigger while a microphone is open, and the capture side and the session type are left alone.
 
-1. **One more check on the device, no code:** a single track after a pitch shift and back to 0, which routes its element through an audio context.
-2. **The fix that check points to:**
-   - if clear, route the playing element through the playback context while a microphone is open (small; the pitch shifter already builds that graph);
-   - if not, play single tracks through the Web Audio engine while a microphone is open (large; its own change, based on the composite engine).
-3. **Remove the "Sound while listening" setting.**
-4. **Only if neither is acceptable,** a notice where the microphone is turned on in iPhone and iPad browsers, and a WebKit bug report.
+1. **Proposed fix, to be written as its own change once its scope is confirmed:** while a microphone is open on iPhone and iPad browsers, single tracks play through the Web Audio engine that composites use, and go back to the media element when the microphone closes or the app is hidden. Costs and open choices (mono or stereo, recording, the preparing wait) are in `design.md`, Decision 2.
+2. **In this change:** remove the "Sound while listening" setting; a notice where the microphone is turned on in iPhone and iPad browsers until the fix covers the case; a WebKit bug report.
 
 ## Capabilities
 
@@ -36,7 +32,7 @@ Device results so far (2026-11-15): with pitch detection on, a composite track, 
 
 ## Impact
 
-- `packages/mobile-rehearsal-player`: `library/playback/shaping/` (the element-to-context graph, built when a microphone opens), `components/audio-session/` (removal of `audio-route-store` and the `AudioRoute` branches), Settings > Microphone.
-- `tools/browser-session`: a scenario asserting what the page builds while a microphone is open; `microphone-audio-route` is removed with the setting.
+- This change: `components/audio-session/` (removal of `audio-route-store` and the `AudioRoute` branches), Settings > Microphone and the microphone prompt (notice), `tools/browser-session` (`microphone-audio-route` removed, a scenario for the notice), the playback doc.
+- The follow-on change: `library/composite/engine/`, `composite/prepared/`, `composite/playback/` (the player seam) and the queue's loading path in `library/playback/`; possibly `library/recording/` for a transport over the engine's clock.
 - `native-playback-follow-ups` 1.12 and 1.13: the native session findings are recorded there.
 - No new dependencies.
