@@ -7,7 +7,7 @@
 
 ## 1. Before building
 
-- [ ] 1.1 Maintainer: play a composite with pitch detection **off**, earbuds in, and send the app to the background. Does it keep playing? Record the answer in `design.md` (Decision 5); if it does keep playing, revisit the hand-back in Decision 4 before 2.5
+- [x] 1.1 Maintainer (2026-11-15, screen recording): a composite with pitch detection off stops within about a second of the app going to the background and resumes from there on return. The engine does not play in the background; the hand-back in design Decision 4 stands (Decision 5)
 - [ ] 1.2 Remove "Sound while listening": `audio-route-store`, the Settings control, the `AudioRoute` branches of the arbiter, their specs and the `microphone-audio-route` scenario; the arbiter keeps `playback` for the piano and `play-and-record` while capturing
 
 ## 2. Stage 1: pitch detection
@@ -46,6 +46,6 @@
 
 ## Follow-ups
 
-- [ ] F1 Composite playback stopped when the app went to the background (maintainer's iPhone, home-screen web app, Bluetooth earbuds, pitch detection on, 2026-11-15). Task 1.1 tells whether it is the platform's behavior for Web Audio without a playing media element. If so, decide separately whether composites should get background playback
+- [ ] F1 Composites do not play in the background (confirmed with pitch detection off, task 1.1): it is how Web Audio playback behaves on the phone with no media element playing. Decide separately whether composites should get background playback, and how
 - [ ] F2 Stereo while a microphone is open: a stereo prepared format and voice for single tracks (deferred by the maintainer 2026-11-15; mono first)
 - [ ] F3 A track prepared for a composite and for listening is stored twice; share the prepared audio between the two owners

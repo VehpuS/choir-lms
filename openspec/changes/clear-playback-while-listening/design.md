@@ -125,7 +125,8 @@ Only the transport changes. The playable item, its source and its owner stay the
 Preparing writes the track as mono 16-bit PCM at the context's rate: about 5.8 MB a minute at 48 kHz, 29 MB for a five-minute track. Composites are few and cleared by hand; single tracks are many, so their prepared audio needs a limit.
 
 - Key: the prepared store's key is (composite id, stem id, content version). Single tracks use a reserved owner id (`track:<track id>`) and one stem id, so the same store, backend and reader serve them, and a changed Drive version prepares again.
-- Budget: 500 MB by default, least recently played removed first, never the track that is playing. Shown in the offline files view as its own group (`Prepared for listening`) with `Clear all`, next to `Prepared composites`. A stem prepared for a composite is not shared with the single-track entry in this change (the same audio may be stored twice; noted as F3).
+- Size is a fixed function of length, not of the file: 2 bytes a sample, one channel, at the context's rate (`prepared-stem-store.ts`). At 48 kHz that is 5.76 MB a minute. The composite in the maintainer's recording has 2:45 stems, so 15.8 MB each; a five-minute track is 28.8 MB.
+- Budget: 500 MB by default, the same default as the offline audio cache (`audio-cache-budget.ts`), least recently played removed first, never the track that is playing. That holds about 87 minutes: 31 tracks of 2:45 or 17 of five minutes, more than a rehearsal's worth. It is a cache: a removed track costs one more preparing wait, nothing else, so the default does not need to be exact. Shown in the offline files view as its own group (`Prepared for listening`) with its size and `Clear all`, next to `Prepared composites`. A stem prepared for a composite is not shared with the single-track entry in this change (the same audio may be stored twice; noted as F3).
 - No room: the existing room check (`composite-room.ts`) and no-room state; the track then stays on the media element and the app says once that the sound may be thin on Bluetooth while it listens.
 - Source of the bytes: `fetchTrackBlob` (the caches, the offline store, then Drive), as composites do. Offline with no stored copy: the track stays on the media element if that can play it, with the same message.
 
@@ -142,9 +143,9 @@ The controller decides per load and per microphone change; one module (`listenin
 
 A gap of up to a few hundred milliseconds at a switch is acceptable; a restart, a position jump of more than that, or a stall is not.
 
-### Decision 5: Check the composite background finding first
+### Decision 5: The engine does not play in the background; confirmed, and left as it is
 
-The hand-back design assumes that Web Audio playback stopping in the background is the platform's behavior for a page with no playing media element, not a bug in the composite path or a side effect of the microphone. Task 1.1 confirms it (composite in the background with pitch detection off) before stage 1 builds on it. If composites can be made to continue in the background cheaply, that is recorded as a follow-up, not folded in here.
+Confirmed by the maintainer on the device with pitch detection off, with a screen recording (2026-11-15): a four-stem composite playing, the app sent to the home screen, the sound stops within about a second and is silent while the app is away, and playback picks up where it stopped on return. So it is how Web Audio playback behaves on the phone with no media element playing, not an effect of the microphone. The hand-back in Decision 4 is therefore needed. Background playback for composites themselves stays a follow-up (F1).
 
 ### Decision 6: Stage 2, recording over the engine's clock
 
@@ -173,6 +174,4 @@ The setting's options cannot differ (Findings 1) and the cause is elsewhere. `au
 
 ## Open Questions
 
-1. The result of task 1.1 (composite in the background with pitch detection off).
-2. The budget for prepared listening audio: 500 MB proposed; the maintainer's phone and library may suggest another default.
-3. The iOS version and the earbuds' model, for the WebKit report.
+1. The iOS version and the earbuds' model, for the WebKit report.
