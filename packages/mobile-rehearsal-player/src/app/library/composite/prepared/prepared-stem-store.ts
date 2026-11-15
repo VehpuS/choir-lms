@@ -53,6 +53,7 @@ const isReadable = (
  */
 export const createPreparedStemStore = (
   backend: PreparedStemsBackend,
+  now: () => number = Date.now,
 ): PreparedStemStore => {
   const begin: PreparedStemStore['begin'] = async (key, format) => {
     const id = preparedStemId(key);
@@ -68,6 +69,7 @@ export const createPreparedStemStore = (
       chunkCount: 0,
       sampleCount: 0,
       sizeBytes: 0,
+      lastUsedAt: now(),
     };
 
     await backend.putRecord(record);
@@ -124,6 +126,13 @@ export const createPreparedStemStore = (
         wavBlobOf(record, await backend.getChunks(record.id)),
       );
     },
+    markUsed: async (key) => {
+      const record = await find(key);
+
+      if (record) {
+        await backend.putRecord({ ...record, lastUsedAt: now() });
+      }
+    },
     has: async (key) => (await find(key)) !== null,
     getPeaks: async (key) => (await find(key))?.peaks ?? null,
     sizeBytes: async () => {
@@ -150,6 +159,11 @@ export const createPreparedStemStore = (
 
         entry.stemCount += 1;
         entry.sizeBytes += record.sizeBytes;
+
+        if (record.lastUsedAt !== undefined) {
+          entry.lastUsedAt = Math.max(entry.lastUsedAt ?? 0, record.lastUsedAt);
+        }
+
         usage.set(record.compositeId, entry);
       }
 
@@ -178,6 +192,7 @@ export const createPreparedStemStore = (
 export const createUnavailablePreparedStemStore = (): PreparedStemStore => ({
   begin: () => Promise.reject(new PreparedStemsUnavailableError()),
   open: async () => null,
+  markUsed: async () => undefined,
   has: async () => false,
   getPeaks: async () => null,
   sizeBytes: async () => 0,

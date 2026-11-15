@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
+import { listeningOwnerId } from './prepared-owner';
 import { pruneOrphanPreparedStems } from './prune-orphan-prepared-stems';
 import { createPreparedStemStore } from './prepared-stem-store';
 import { createMemoryPreparedStemsBackend } from './prepared-stem-test-support';
@@ -46,5 +47,16 @@ describe('pruneOrphanPreparedStems', () => {
     await prepare(store, 'kept');
 
     assert.deepEqual(await pruneOrphanPreparedStems(store, ['kept']), []);
+  });
+
+  it('leaves audio prepared for a single track alone', async () => {
+    const store = createPreparedStemStore(
+      createMemoryPreparedStemsBackend().backend,
+    );
+
+    await prepare(store, listeningOwnerId('track-1'));
+
+    assert.deepEqual(await pruneOrphanPreparedStems(store, []), []);
+    assert.equal((await store.listComposites()).length, 1);
   });
 });

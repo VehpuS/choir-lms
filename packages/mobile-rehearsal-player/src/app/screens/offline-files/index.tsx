@@ -22,6 +22,8 @@ import { usePinnedBulkActionBar } from '../../library/selection/use-pinned-bulk-
 import { useSelection } from '../../library/selection/use-selection';
 import { OfflineFilesFooter } from './offline-files-footer';
 import { PreparedCompositesGroup } from './prepared-composites-group';
+import { PreparedListeningGroup } from './prepared-listening-group';
+import { usePreparedListening } from '../../library/playback/listening-engine/use-prepared-listening';
 import { usePreparedComposites } from '../../library/composite/prepared/use-prepared-composites';
 import { useRecordingsStorage } from '../../library/recording/use-recordings-storage';
 import { appTheme } from '../../utils/theme';
@@ -79,6 +81,7 @@ export const OfflineFilesContent = ({
   const recordings = useRecordingsStorage();
   const persistentStorageStatus = usePersistentStorageStatus();
   const prepared = usePreparedComposites();
+  const listening = usePreparedListening();
   const selection = useSelection<OfflineFileRow>();
   const { cancel, deselectMany, enter, selectMany, selectedKeys, toggle } =
     selection;
@@ -171,9 +174,10 @@ export const OfflineFilesContent = ({
       />
     ));
   const isEmpty = allRows.length === 0;
-  // Prepared composite stems are offline files too: with only those, the view
-  // still lists them and offers `Clear all`.
-  const hasNothing = isEmpty && prepared.summary.count === 0;
+  // Prepared audio is offline files too: with only that, the view still lists
+  // it and offers `Clear all`.
+  const hasNothing =
+    isEmpty && prepared.summary.count === 0 && listening.summary.count === 0;
 
   return (
     <View
@@ -258,6 +262,7 @@ export const OfflineFilesContent = ({
             <OfflineFilesFooter
               allRows={allRows}
               automaticRows={snapshot.automatic}
+              listening={listening}
               prepared={prepared}
               requestConfirmation={confirmationFlow.requestConfirmation}
               service={service}
@@ -265,6 +270,7 @@ export const OfflineFilesContent = ({
           </>
         )}
         <PreparedCompositesGroup summary={prepared.summary} />
+        <PreparedListeningGroup summary={listening.summary} />
         <RecordingsGroup
           onDelete={recordings.deleteRecording}
           requestConfirmation={confirmationFlow.requestConfirmation}
