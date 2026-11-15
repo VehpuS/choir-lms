@@ -17,21 +17,39 @@ void runScenario({
   library: { playlists: [], sources: [alto] },
   requires: ['chromium', 'firefox'],
   steps: async ({ page, pass }) => {
-    const sampleRequests: string[] = [];
+    // Requests are counted per document: the page that was open before the
+    // reload may run its own warm-up (it waits for the browser to be idle)
+    // after the listener is attached, and those requests are not this launch's.
+    const requestsByDocument = new Map<number, string[]>();
+    let currentDocument = 0;
+    const sampleRequestsNow = () =>
+      requestsByDocument.get(currentDocument) ?? [];
 
     page.on('request', (request) => {
+      // A new document starts with its own navigation request (history pushes
+      // by the router make none).
+      if (
+        request.isNavigationRequest() &&
+        request.frame() === page.mainFrame()
+      ) {
+        currentDocument += 1;
+      }
+
       if (/\.mp3(\?|$)/.test(request.url())) {
-        sampleRequests.push(request.url());
+        requestsByDocument.set(currentDocument, [
+          ...sampleRequestsNow(),
+          request.url(),
+        ]);
       }
     });
 
-    // A fresh launch: reload with the listener already in place.
+    // A fresh launch: reload with the listeners already in place.
     await page.reload();
     await waitForTrack(page, 'Alto Part').catch(() => undefined);
 
     await waitUntil(
-      async () => sampleRequests.length >= SAMPLE_COUNT,
-      `the recordings were not fetched at app start (${sampleRequests.length} of ${SAMPLE_COUNT} requested, piano never opened)`,
+      async () => sampleRequestsNow().length >= SAMPLE_COUNT,
+      `the recordings were not fetched at app start (${sampleRequestsNow().length} of ${SAMPLE_COUNT} requested, piano never opened)`,
       WAIT_MS,
     );
     pass('The recordings are fetched at app start, before the piano is opened');
@@ -39,7 +57,7 @@ void runScenario({
     await openPiano(page);
     await page.waitForTimeout(1000);
     assert.equal(
-      sampleRequests.length,
+      sampleRequestsNow().length,
       SAMPLE_COUNT,
       'opening the piano fetched the recordings again instead of using the warmed ones',
     );
