@@ -2,7 +2,7 @@
 
 ### Environment of the reports
 
-- iPhone 17 Pro, the app added to the home screen (the web app as a standalone app, not a Safari tab). The iOS version and the earbuds' model were not recorded.
+- iPhone 17 Pro on iOS 26.6.2 with Soundcore P40i Bluetooth earbuds, the app added to the home screen (the web app as a standalone app, not a Safari tab).
 - Chrome on a Mac was not reported as affected; the maintainer tests on Chrome (Mac) and the iPhone only.
 - Unreproducible in CI: Chromium has no Bluetooth route and no iOS audio session. The browser scenarios check what the page asks for, never what iOS does.
 
@@ -174,4 +174,4 @@ The setting's options cannot differ (Findings 1) and the cause is elsewhere. `au
 
 ## Open Questions
 
-1. The iOS version and the earbuds' model, for the WebKit report.
+None.

@@ -41,7 +41,7 @@
 
 ## 5. Report
 
-- [ ] 5.1 Record the iOS version and the earbuds' model
+- [x] 5.1 iOS 26.6.2, Soundcore P40i earbuds (maintainer, 2026-11-15; `design.md`, Context)
 - [ ] 5.2 Look up WebKit bug 311451 and add the finding (a playing media element degrades Bluetooth output while a microphone is open, also when routed through Web Audio; Web Audio playback does not), or file a new bug
 
 ## Follow-ups
