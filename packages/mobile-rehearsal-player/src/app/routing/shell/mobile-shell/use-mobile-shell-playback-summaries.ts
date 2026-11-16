@@ -1,5 +1,9 @@
 import type { PlayableItem } from '@org/audio-library-models';
 
+import {
+  getListeningFallbackLabel,
+  useListeningFallback,
+} from '../../../library/playback/listening-engine/listening-fallback-state';
 import { getListeningLoadLabel } from '../../../library/playback/listening-engine/listening-load-label';
 import { useListeningLoadState } from '../../../library/playback/listening-engine/listening-load-state';
 import { useSavedTrackDownloadProgress } from '../../../library/playback/hooks/use-saved-track-download-progress';
@@ -47,6 +51,11 @@ export const useMobileShellPlaybackSummaries = ({
   const downloadProgress = useSavedTrackDownloadProgress();
   // With a microphone open the track is prepared for the engine instead, once.
   const listeningLoadLabel = getListeningLoadLabel(useListeningLoadState());
+  // Or it could not be prepared and stays on the media element: said once.
+  const listeningFallbackLabel = getListeningFallbackLabel(
+    useListeningFallback(),
+    activePlayableItem?.source.id ?? null,
+  );
 
   return {
     miniPlayerSummary: getMiniPlayerSummary(summaryOptions),
@@ -54,6 +63,7 @@ export const useMobileShellPlaybackSummaries = ({
     // A playing track can be prepared too (the microphone opened under it).
     playbackDownloadLabel:
       listeningLoadLabel ??
+      listeningFallbackLabel ??
       (isPlaybackPreparing ? getPlaybackDownloadLabel(downloadProgress) : null),
     upNextSummary: getUpNextSurfaceSummary({ activePlaylistSession }),
   };

@@ -28,6 +28,7 @@ const setup = (overrides: Partial<ListeningHandoverDependencies> = {}) => {
   };
   const calls: string[] = [];
   const failures: unknown[] = [];
+  const stays: unknown[] = [];
   const engines: Array<ReturnType<typeof createTestEngine>> = [];
   const handover = createListeningHandover({
     getItem: () => state.item,
@@ -51,11 +52,12 @@ const setup = (overrides: Partial<ListeningHandoverDependencies> = {}) => {
       calls.push(`element@${snapshot.positionSeconds}:${snapshot.isPlaying}`);
       state.kind = null;
     },
+    onStayedOnElement: (_item, error) => stays.push(error),
     onFailure: (_item, error) => failures.push(error),
     ...overrides,
   });
 
-  return { calls, engines, failures, handover, state };
+  return { calls, engines, failures, handover, state, stays };
 };
 
 describe('listening hand-over to the engine', () => {
@@ -128,7 +130,8 @@ describe('listening hand-over to the engine', () => {
     await t.handover.sync();
 
     assert.deepEqual(t.calls, []);
-    assert.deepEqual(t.failures, [failure]);
+    assert.deepEqual(t.stays, [failure]);
+    assert.deepEqual(t.failures, []);
     assert.equal(t.state.kind, null);
   });
 
@@ -143,6 +146,7 @@ describe('listening hand-over to the engine', () => {
     await t.handover.sync();
 
     assert.deepEqual(t.failures, []);
+    assert.deepEqual(t.stays, []);
   });
 });
 

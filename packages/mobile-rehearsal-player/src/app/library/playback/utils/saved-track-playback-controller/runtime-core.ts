@@ -7,6 +7,7 @@ import { loadCompositeEngine } from '../../../composite/playback/composite-engin
 import { loadCompositeItemIntoPlayer } from '../../../composite/playback/load-composite-item';
 import { createControllerListeningHandover } from './listening-handover';
 import { setAppListeningHandover } from '../../listening-engine/handover';
+import { getListeningFallbackStore } from '../../listening-engine/listening-fallback-state';
 import { getListeningRuleState } from '../../listening-engine/listening-rule-state';
 import { loadItemOnListeningEngine } from '../../listening-engine/load-listening-item';
 import { getListeningTrackLoads } from '../../listening-engine/listening-track-loads';
@@ -140,8 +141,10 @@ export const createSavedTrackPlaybackRuntimeCore = (
     accessToken,
     loadOptions,
   ) => {
-    // Whatever loads now replaces a track still being prepared for the engine.
+    // Whatever loads now replaces a track still being prepared for the engine,
+    // and what was said about the last track no longer applies.
     getListeningTrackLoads().supersede();
+    getListeningFallbackStore().clear();
 
     // A composite has no Drive file or media element: it loads through its own
     // engine (task 3.5), after the player is reset to release the last track.
@@ -198,7 +201,10 @@ export const createSavedTrackPlaybackRuntimeCore = (
       applyShaping: () =>
         applyAmbientShaping(playbackRequest.playableItem.transform),
       onFallback: (error) =>
-        console.warn('The track plays on the media element instead.', error),
+        getListeningFallbackStore().report(
+          playbackRequest.playableItem.source.id,
+          error,
+        ),
     });
 
     if (isOnEngine) {

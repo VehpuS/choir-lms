@@ -41,7 +41,9 @@ export type ListeningHandoverDependencies = {
     item: PlayableItem,
     snapshot: HandoverSnapshot,
   ) => Promise<void>;
-  /** A switch that could not be made; the track is left where it was when that is possible. */
+  /** The engine could not be built: the track goes on playing on the media element. */
+  onStayedOnElement: (item: PlayableItem, error: unknown) => void;
+  /** A switch that started and could not be finished. */
   onFailure: (item: PlayableItem, error: unknown) => void;
 };
 
@@ -61,7 +63,18 @@ export const createListeningHandover = (
     dependencies.getItem()?.id === item.id && !dependencies.isLoadInFlight();
 
   const toEngine = async (item: PlayableItem) => {
-    const engine = await dependencies.prepareEngine(item);
+    let engine: CompositeEngine;
+
+    try {
+      engine = await dependencies.prepareEngine(item);
+    } catch (error) {
+      // Superseded by a newer load, which applies the rule itself.
+      if (!isSavedTrackDownloadAbortError(error)) {
+        dependencies.onStayedOnElement(item, error);
+      }
+
+      return;
+    }
 
     // Preparing can take seconds: only switch if nothing changed meanwhile.
     if (

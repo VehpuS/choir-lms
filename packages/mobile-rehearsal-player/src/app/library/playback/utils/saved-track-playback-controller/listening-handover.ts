@@ -7,6 +7,7 @@ import {
   type HandoverSnapshot,
   type ListeningHandover,
 } from '../../listening-engine/handover';
+import { getListeningFallbackStore } from '../../listening-engine/listening-fallback-state';
 import { getListeningRuleState } from '../../listening-engine/listening-rule-state';
 import { getListeningTrackLoads } from '../../listening-engine/listening-track-loads';
 import { shouldPlayOnListeningEngine } from '../../listening-engine/load-listening-item';
@@ -36,6 +37,7 @@ export const createControllerListeningHandover = (core: {
 }): ListeningHandover => {
   const { options } = core;
   const accessToken = () => options.authState.accessToken ?? null;
+  const fallbacks = getListeningFallbackStore();
   // Across a switch the same track is still where it was, so its position and
   // length stay on screen instead of the empty progress of a load.
   const heldProgressAt = (positionSeconds: number): SavedTrackProgress => ({
@@ -47,8 +49,17 @@ export const createControllerListeningHandover = (core: {
   return createListeningHandover({
     getItem: () => options.activePlayableItemRef.current,
     getEngineKind: getActiveEngineKind,
-    wantsEngine: (item) =>
-      shouldPlayOnListeningEngine(item, getListeningRuleState()),
+    wantsEngine: (item) => {
+      const byRule = shouldPlayOnListeningEngine(item, getListeningRuleState());
+
+      // Without a microphone nothing is thin: a track that could not be
+      // prepared is tried again the next time one opens.
+      if (!byRule) {
+        fallbacks.clear();
+      }
+
+      return byRule && !fallbacks.has(item.source.id);
+    },
     isLoadInFlight: core.isLoadInFlight,
     readSnapshot: core.readLivePlaybackSnapshot,
     prepareEngine: (item) =>
@@ -76,6 +87,7 @@ export const createControllerListeningHandover = (core: {
         heldProgress: heldProgressAt(snapshot.positionSeconds),
       });
     },
+    onStayedOnElement: (item, error) => fallbacks.report(item.source.id, error),
     onFailure: (item, error) =>
       options.setIssue(createSavedTrackPlaybackRuntimeIssue(item, error)),
   });
