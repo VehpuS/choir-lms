@@ -66,6 +66,18 @@ export type ListeningEngineLoader = (
   },
 ) => Promise<CompositeEngine>;
 
+type ListeningAudioOptions = NonNullable<Parameters<ListeningEngineLoader>[1]>;
+
+/** The two things done with a track's listening audio: play it, or only get it ready. */
+export type ListeningAudio = {
+  loadEngine: ListeningEngineLoader;
+  /** Prepares the track if it is not prepared yet, without building an engine or showing progress. */
+  prepare: (
+    track: DriveAudioSource,
+    options?: ListeningAudioOptions,
+  ) => Promise<void>;
+};
+
 export type ListeningLoaderDependencies = Pick<
   CompositeLoaderDependencies,
   'getContext' | 'store' | 'fetchBlob' | 'createEngine'
@@ -84,13 +96,21 @@ const defaultDependencies = (): ListeningLoaderDependencies => ({
   estimator: getBrowserEstimator(),
 });
 
-export const createListeningEngineLoader = (
+export const createListeningAudio = (
   overrides: Partial<ListeningLoaderDependencies> = {},
-): ListeningEngineLoader => {
+): ListeningAudio => {
   const dependencies = { ...defaultDependencies(), ...overrides };
   const { store } = dependencies;
+  // The work in flight per track. A track is prepared ahead of its turn in the
+  // queue, and its turn can come first: the load then waits for that work
+  // instead of writing the same stem a second time under it.
+  const inFlight = new Map<string, Promise<unknown>>();
 
-  return async (track, options = {}) => {
+  const obtainReader = async (
+    track: DriveAudioSource,
+    options: ListeningAudioOptions,
+    showsProgress: boolean,
+  ) => {
     const context = dependencies.getContext();
 
     if (!context) {
@@ -145,18 +165,20 @@ export const createListeningEngineLoader = (
       }
     }
 
-    const progress = dependencies.loadState.begin(
-      track.id,
-      [LISTENING_STEM_ID],
-      isFirstTime ? 'preparing' : 'loading',
-    );
+    const progress = showsProgress
+      ? dependencies.loadState.begin(
+          track.id,
+          [LISTENING_STEM_ID],
+          isFirstTime ? 'preparing' : 'loading',
+        )
+      : null;
 
     try {
       const reader = await createStemLoader(stemLoaderDependencies)({
         stemId: LISTENING_STEM_ID,
         signal: options.signal ?? new AbortController().signal,
         onProgress: (fraction) =>
-          progress.update([
+          progress?.update([
             { stemId: LISTENING_STEM_ID, status: 'loading', fraction },
           ]),
       });
@@ -174,14 +196,75 @@ export const createListeningEngineLoader = (
         await makeRoom(0);
       }
 
-      return await dependencies.createEngine({
-        stems: [{ id: LISTENING_STEM_ID, offsetMs: NO_OFFSET_MS, reader }],
-        initialGains: { [LISTENING_STEM_ID]: FULL_GAIN },
-      });
+      return reader;
     } catch (error) {
       throw isStorageFullError(error) ? new ListeningNoRoomError() : error;
     } finally {
-      progress.end();
+      progress?.end();
     }
   };
+
+  /** One piece of work per track at a time; a later one starts when the earlier ends, however it ends. */
+  const inTurn = async <Result>(
+    track: DriveAudioSource,
+    showsProgress: boolean,
+    work: () => Promise<Result>,
+  ): Promise<Result> => {
+    const earlier = inFlight.get(track.id);
+
+    if (earlier) {
+      // Say so while waiting for a preparation that shows no progress itself.
+      const waiting = showsProgress
+        ? dependencies.loadState.begin(
+            track.id,
+            [LISTENING_STEM_ID],
+            'preparing',
+          )
+        : null;
+
+      await earlier.catch(() => undefined);
+      waiting?.end();
+    }
+
+    const current = work();
+
+    inFlight.set(track.id, current);
+
+    try {
+      return await current;
+    } finally {
+      if (inFlight.get(track.id) === current) {
+        inFlight.delete(track.id);
+      }
+    }
+  };
+
+  return {
+    loadEngine: (track, options = {}) =>
+      inTurn(track, true, async () => {
+        const reader = await obtainReader(track, options, true);
+
+        return dependencies.createEngine({
+          stems: [{ id: LISTENING_STEM_ID, offsetMs: NO_OFFSET_MS, reader }],
+          initialGains: { [LISTENING_STEM_ID]: FULL_GAIN },
+        });
+      }),
+    prepare: (track, options = {}) =>
+      inTurn(track, false, async () => {
+        await obtainReader(track, options, false);
+      }),
+  };
+};
+
+export const createListeningEngineLoader = (
+  overrides: Partial<ListeningLoaderDependencies> = {},
+): ListeningEngineLoader => createListeningAudio(overrides).loadEngine;
+
+let appAudio: ListeningAudio | null = null;
+
+/** The app's one listening audio, so a load and preparing ahead share the work in flight. */
+export const getListeningAudio = (): ListeningAudio => {
+  appAudio ??= createListeningAudio();
+
+  return appAudio;
 };

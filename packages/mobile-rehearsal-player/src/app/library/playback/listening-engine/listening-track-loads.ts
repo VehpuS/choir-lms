@@ -3,7 +3,7 @@ import type { DriveAudioSource } from '@org/audio-library-models';
 import type { CompositeEngine } from '../../composite/engine/composite-engine';
 import { createAbortError } from '../utils/saved-track-blob-download';
 import {
-  createListeningEngineLoader,
+  getListeningAudio,
   type ListeningEngineLoader,
 } from './create-listening-engine-loader';
 
@@ -61,7 +61,7 @@ export const createListeningTrackLoads = (
 let appLoads: ListeningTrackLoads | null = null;
 
 export const getListeningTrackLoads = (): ListeningTrackLoads => {
-  appLoads ??= createListeningTrackLoads(createListeningEngineLoader());
+  appLoads ??= createListeningTrackLoads(getListeningAudio().loadEngine);
 
   return appLoads;
 };

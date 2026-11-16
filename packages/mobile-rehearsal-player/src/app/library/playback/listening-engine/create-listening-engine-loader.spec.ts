@@ -12,6 +12,7 @@ import {
 import { createPreparedStemStore } from '../../composite/prepared/prepared-stem-store';
 import { createMemoryPreparedStemsBackend } from '../../composite/prepared/prepared-stem-test-support';
 import {
+  createListeningAudio,
   createListeningEngineLoader,
   ListeningNoRoomError,
 } from './create-listening-engine-loader';
@@ -172,5 +173,77 @@ describe('createListeningEngineLoader', () => {
 
     await assert.rejects(t.loader(track('t1'), { signal: controller.signal }));
     assert.equal(t.built.length, 0);
+  });
+});
+
+describe('createListeningAudio', () => {
+  const RATE_HZ = 8000;
+  const build = () => {
+    const fetched: string[] = [];
+    const built: string[] = [];
+    const loadState = createCompositeLoadStore();
+    const shown: Array<string | null> = [];
+    let releaseFetch: () => void = () => undefined;
+    const fetchGate = new Promise<void>((resolve) => {
+      releaseFetch = resolve;
+    });
+
+    loadState.subscribe(() => shown.push(loadState.get()?.phase ?? null));
+
+    const audio = createListeningAudio({
+      getContext: () => ({
+        sampleRate: RATE_HZ,
+        decodeAudioData: async () => ({
+          numberOfChannels: 1,
+          sampleRate: RATE_HZ,
+          getChannelData: () => new Float32Array(RATE_HZ).fill(0.1),
+        }),
+      }),
+      store: createPreparedStemStore(
+        createMemoryPreparedStemsBackend().backend,
+      ),
+      loadState,
+      estimator: undefined,
+      fetchBlob: async (source) => {
+        fetched.push(source.id);
+        await fetchGate;
+
+        return new Blob([source.id]);
+      },
+      createEngine: async (options) => {
+        built.push(options.stems[0].id);
+
+        return createTestEngine().engine;
+      },
+    });
+
+    return { audio, built, fetched, releaseFetch, shown };
+  };
+
+  it('prepares a track ahead without building an engine or showing progress', async () => {
+    const t = build();
+    const prepared = t.audio.prepare(track('t1'));
+
+    t.releaseFetch();
+    await prepared;
+
+    assert.deepEqual(t.fetched, ['t1']);
+    assert.deepEqual(t.built, []);
+    assert.deepEqual(t.shown, []);
+  });
+
+  it('makes a load wait for the same track being prepared ahead, instead of preparing it twice', async () => {
+    const t = build();
+    const prepared = t.audio.prepare(track('t1'));
+    const loaded = t.audio.loadEngine(track('t1'));
+
+    t.releaseFetch();
+    await Promise.all([prepared, loaded]);
+
+    assert.deepEqual(t.fetched, ['t1']);
+    assert.equal(t.built.length, 1);
+    // The player says it is preparing while it waits, then only opens the track.
+    assert.equal(t.shown[0], 'preparing');
+    assert.equal(t.shown.includes('loading'), true);
   });
 });
