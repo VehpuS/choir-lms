@@ -28,7 +28,11 @@ const session = (
     hasCompleted: false,
     queue: { items, repeatMode },
   }) as unknown as PlaylistPlaybackSession;
-const listening = { isMicrophoneOpen: true, isRecordingToolOpen: false };
+const listening = {
+  isMicrophoneOpen: true,
+  isRecordingToolOpen: false,
+  isAppHidden: false,
+};
 
 describe('resolveTrackToPrepareAhead', () => {
   it('is the next track of the queue while a microphone is open', () => {

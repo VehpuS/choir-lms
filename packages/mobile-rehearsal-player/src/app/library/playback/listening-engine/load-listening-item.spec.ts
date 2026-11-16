@@ -42,7 +42,11 @@ const compositeItem = createCompositePlayableItem(
 
 afterEach(() => clearActiveCompositeEngine());
 
-const listening = { isMicrophoneOpen: true, isRecordingToolOpen: false };
+const listening = {
+  isMicrophoneOpen: true,
+  isRecordingToolOpen: false,
+  isAppHidden: false,
+};
 
 describe('shouldPlayOnListeningEngine', () => {
   it('is for a track, a loop or an adjusted track while a microphone is open', () => {
@@ -73,6 +77,16 @@ describe('shouldPlayOnListeningEngine', () => {
     );
   });
 
+  it('is not while the app is hidden: only the media element plays in the background', () => {
+    assert.equal(
+      shouldPlayOnListeningEngine(trackItem(), {
+        ...listening,
+        isAppHidden: true,
+      }),
+      false,
+    );
+  });
+
   it('leaves a composite to its own load and a recording item on the media element', () => {
     assert.equal(shouldPlayOnListeningEngine(compositeItem, listening), false);
     assert.equal(
@@ -91,6 +105,7 @@ const load = (overrides: Partial<LoadListeningItemOptions> = {}) => {
     accessToken: 'token',
     isMicrophoneOpen: true,
     isRecordingToolOpen: false,
+    isAppHidden: false,
     player: { reset: async () => void calls.push('reset') },
     loads: {
       supersede: () => undefined,

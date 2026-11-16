@@ -16,14 +16,23 @@ import type { ListeningTrackLoads } from './listening-track-loads';
  * playing media element is what thins Bluetooth output then. A composite has
  * its own engine load. Recording still follows the media element's clock
  * (until stage 2 gives it the engine's), so with the Recording tool open, and
- * for a recording item, the track stays on the media element.
+ * for a recording item, the track stays on the media element. So does every
+ * track while the app is hidden: the engine does not play in the background,
+ * the media element does (design Decisions 4 and 5).
  */
+export type ListeningRuleState = {
+  isMicrophoneOpen: boolean;
+  isRecordingToolOpen: boolean;
+  isAppHidden: boolean;
+};
+
 export const shouldPlayOnListeningEngine = (
   item: Pick<PlayableItem, 'source' | 'recordingId'>,
-  state: { isMicrophoneOpen: boolean; isRecordingToolOpen: boolean },
+  state: ListeningRuleState,
 ): boolean =>
   state.isMicrophoneOpen &&
   !state.isRecordingToolOpen &&
+  !state.isAppHidden &&
   !isCompositeSource(item.source) &&
   item.recordingId === undefined;
 
@@ -32,6 +41,7 @@ export type LoadListeningItemOptions = {
   accessToken: string | null;
   isMicrophoneOpen: boolean;
   isRecordingToolOpen: boolean;
+  isAppHidden: boolean;
   player: CompositeLoadPlayer;
   loads: ListeningTrackLoads;
   volume: number;
