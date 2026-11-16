@@ -26,6 +26,8 @@ export type LoadPlayableItemIntoPlayer = (
     initialPositionSeconds?: number;
     shouldPlay?: boolean;
     syncActivePlayableItem?: boolean;
+    /** Keeps showing this while loading: the same item moving to another player. */
+    heldProgress?: { buffered: number; duration: number; position: number };
   },
 ) => Promise<PlayableItem>;
 

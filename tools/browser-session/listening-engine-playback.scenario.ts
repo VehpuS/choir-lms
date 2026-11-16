@@ -104,17 +104,13 @@ void runScenario({
 
     pass('A single track on the engine shows no Mix panel');
 
-    // Recording follows the media element's clock until it can follow the
-    // engine's, so it is not offered while the engine plays.
+    // Recording stays on offer: opening it hands the track back to the media
+    // element (covered by `listening-handover`).
     await page.getByLabel('Playback practice tools').click();
     await page.getByLabel('Pitch detection, on').waitFor({ timeout: WAIT_MS });
-
-    if ((await page.getByLabel(/^Recording, /).count()) > 0) {
-      throw new Error('Recording is offered while the engine plays the track');
-    }
-
+    await page.getByLabel('Recording, off').waitFor({ timeout: WAIT_MS });
     await page.getByLabel('Close practice tools').first().click();
-    pass('Recording is not offered while the engine plays the track');
+    pass('Recording is still offered while the engine plays the track');
 
     // Pause and resume keep the position.
     await page.getByLabel('Pause Alto Part').last().click();

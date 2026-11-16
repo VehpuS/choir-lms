@@ -1,3 +1,4 @@
+import { useListeningHandover } from '../../listening-engine/use-listening-handover';
 import { type PlayableItem, type RepeatMode } from '@org/audio-library-models';
 import { type DriveAuthorizationState } from '@org/google-drive';
 import type { Dispatch, SetStateAction } from 'react';
@@ -182,6 +183,14 @@ export const useSavedTrackPlayback = (
     setVolumeLevel,
     volumeLevel,
     volumeLevelRef,
+  });
+
+  // The playing track moves between the media element and the engine when a
+  // microphone opens or closes (clear-playback-while-listening Decision 4).
+  useListeningHandover({
+    activeItemId: activePlayableItem?.id ?? null,
+    isPreparing,
+    sync: playbackController.syncListeningPlayer,
   });
 
   // The screen stays on while a track plays, and the lock screen and media

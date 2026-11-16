@@ -57,6 +57,14 @@ export const readMediaState = (page: Page): Promise<MediaState | null> =>
       : null;
   });
 
+/**
+ * Whether the app says a track is playing, whichever player has it: the media
+ * element, or the Web Audio engine while a microphone is open (which no media
+ * element probe can see). Read from the Media Session the app keeps current.
+ */
+export const readAppIsPlaying = (page: Page): Promise<boolean> =>
+  page.evaluate(() => navigator.mediaSession?.playbackState === 'playing');
+
 // Capturing starts with a glitchy first few hundred milliseconds (the stream
 // is still starting up), even at normal speed, so that part is dropped.
 const CAPTURE_WARMUP_SECONDS = 0.5;

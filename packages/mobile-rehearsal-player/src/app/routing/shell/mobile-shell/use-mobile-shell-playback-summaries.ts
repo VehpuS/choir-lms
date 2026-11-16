@@ -51,9 +51,10 @@ export const useMobileShellPlaybackSummaries = ({
   return {
     miniPlayerSummary: getMiniPlayerSummary(summaryOptions),
     nowPlayingSummary: getNowPlayingSurfaceSummary(summaryOptions),
-    playbackDownloadLabel: isPlaybackPreparing
-      ? (listeningLoadLabel ?? getPlaybackDownloadLabel(downloadProgress))
-      : null,
+    // A playing track can be prepared too (the microphone opened under it).
+    playbackDownloadLabel:
+      listeningLoadLabel ??
+      (isPlaybackPreparing ? getPlaybackDownloadLabel(downloadProgress) : null),
     upNextSummary: getUpNextSurfaceSummary({ activePlaylistSession }),
   };
 };

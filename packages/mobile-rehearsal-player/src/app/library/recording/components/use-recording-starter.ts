@@ -1,3 +1,4 @@
+import { whenListeningHandoverSettled } from '../../playback/listening-engine/handover';
 import type { PlayableItem } from '@org/audio-library-models';
 import type { PunchRange } from '@org/audio-mixing';
 import { useCallback, type MutableRefObject } from 'react';
@@ -36,6 +37,10 @@ export const useRecordingStarter = ({
       if (!current) {
         throw new Error('No track to record');
       }
+
+      // Opening the Recording tool moves a track off the engine; the take's
+      // transport is read only once that is done.
+      await whenListeningHandoverSettled();
 
       const existing = await getRecordingsStore().listByOwner(
         getRecordingOwnerForItem(current, punch),

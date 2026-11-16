@@ -1,7 +1,7 @@
 import { useState } from 'react';
 
 import { useLayoutClass } from '../../routing/shell/layout-class';
-import { useActiveCompositeEngine } from '../composite/playback/use-active-composite';
+import { useIsCompositePlaying } from '../composite/playback/use-active-composite';
 import { pianoCapabilities } from '../piano/piano-capabilities';
 import { resolvePianoPresentation } from '../piano/piano-overlay-model';
 import { pitchCapabilities } from '../pitch/pitch-capabilities';
@@ -47,19 +47,19 @@ export const usePracticeTools = ({
   const layoutClass = useLayoutClass();
   const isMonitorOpen = usePitchMonitorOpen();
   const isStripOpen = useRecordingStripOpen();
-  // Recording follows the media element's clock, which the engine does not
-  // have, so the entry is hidden while the engine plays: a composite
-  // (composite-tracks design Decision 5), or a single track while a microphone
-  // is open, until recording follows the engine's clock (clear-playback-while-
-  // listening stage 2).
-  const isEngineActive = useActiveCompositeEngine() !== null;
+  // Recording follows the media element's clock, which a composite does not
+  // have, so the entry is hidden while one plays (composite-tracks design
+  // Decision 5). A single track on the engine keeps it: opening the Recording
+  // tool hands the track back to the media element (clear-playback-while-
+  // listening design Decision 4).
+  const isCompositeActive = useIsCompositePlaying();
   const canListen = pitchCapabilities().canListen;
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const model = getPracticeToolsModel({
     piano: pianoCapabilities().canPlay ? { checked: isPianoOpen } : null,
     pitch: canListen ? { checked: isMonitorOpen } : null,
     recording:
-      recordingCapabilities().canRecord && !isEngineActive
+      recordingCapabilities().canRecord && !isCompositeActive
         ? { checked: isStripOpen }
         : null,
   });

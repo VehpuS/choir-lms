@@ -16,6 +16,11 @@ export type SavedTrackProgressGate = {
   epoch: number;
   /** False while a load (or a duration probe) owns the player. */
   settled: boolean;
+  /**
+   * Shown in place of empty progress while the gate hides the player's own:
+   * the same item is being moved to another player and is still where it was.
+   */
+  held?: SavedTrackProgress;
 };
 
 /** After settling, the player's next changed report is treated as current. */
@@ -46,35 +51,45 @@ export const resolveGatedSavedTrackProgress = (options: {
 }): SavedTrackProgress => {
   const { gate, raw, rawAtSettle, releasedEpoch } = options;
 
+  const hidden = gate.held ?? EMPTY_SAVED_TRACK_PROGRESS;
+
   if (!gate.settled) {
-    return EMPTY_SAVED_TRACK_PROGRESS;
+    return hidden;
   }
 
   if (releasedEpoch === gate.epoch || (rawAtSettle && raw !== rawAtSettle)) {
     return raw;
   }
 
-  return EMPTY_SAVED_TRACK_PROGRESS;
+  return hidden;
 };
+
+const withHeld = (held: SavedTrackProgress | undefined) =>
+  held ? { held } : {};
 
 /** The epoch counter the controller and the hook share. */
 export const createSavedTrackProgressGateController = (
   onChange: (gate: SavedTrackProgressGate) => void,
 ) => {
   let latestEpoch = INITIAL_SAVED_TRACK_PROGRESS_GATE.epoch;
+  let heldByEpoch: SavedTrackProgress | undefined;
 
   return {
-    /** A load is starting; returns the epoch to hand back to `settle`. */
-    begin() {
+    /**
+     * A load is starting; returns the epoch to hand back to `settle`. `held`
+     * is what to show meanwhile when the item itself does not change.
+     */
+    begin(held?: SavedTrackProgress) {
       latestEpoch += 1;
-      onChange({ epoch: latestEpoch, settled: false });
+      heldByEpoch = held;
+      onChange({ epoch: latestEpoch, settled: false, ...withHeld(held) });
 
       return latestEpoch;
     },
     /** Ignored when a newer load has started, so only the last one settles. */
     settle(epoch: number) {
       if (epoch === latestEpoch) {
-        onChange({ epoch, settled: true });
+        onChange({ epoch, settled: true, ...withHeld(heldByEpoch) });
       }
     },
   };
