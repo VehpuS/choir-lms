@@ -78,6 +78,20 @@ iPhone 17 Pro, the maintainer's regular Bluetooth earbuds, pitch detection on. T
 
 Seen on the way: the composite did not keep playing when the app went to the background (Decision 5, task 1.1).
 
+### 5. Second device round (maintainer, 2026-11-17, the branch deployed to Pages)
+
+iPhone 17 Pro, iOS 26.6.2, Soundcore P40i, home-screen web app:
+
+- With pitch detection on and a track playing, the sound is **still thin**.
+- After pitch detection is turned off, the thin sound **stays**, also across pause and resume.
+- A composite still stops when the app is left (the engine does not play in the background; Decision 5, follow-up F1).
+
+This breaks the premise of Decision 1 (that Web Audio playback stays clear while a microphone is open) for a single track on the engine, although the composite was clear in the first round. The app does not show which player has the track, so it is not known whether the track was on the engine in this round, or whether a hand-over fell back to the media element.
+
+What WebKit's source (read 2026-11-15) adds: `MediaSessionManagerCocoa::updateSessionState` keeps the session in play-and-record with the chat mode after the capture has ended, while something audible plays (`isPlayingAudio && category() == PlayAndRecord`), and `navigator.audioSession.type = 'auto'` does not release it; an explicit `playback` does (`categoryOverride`). By that source a pause makes the session leave play-and-record, so it does not explain a thin sound that survives pause and resume.
+
+Candidate causes, none shown yet: (a) the sticky play-and-record above; (b) the app's audio context, or the audio prepared in it, runs at a narrowband rate because it was created or prepared while the headset was in its hands-free mode (prepared audio is stored at the context's rate); (c) the OS keeps the headset in hands-free after the capture stops; (d) the track was not on the engine at all. The Sound check (`library/pitch/sound-check/`, Settings > Microphone, experimental) plays a test sound through each path, opens the microphone and sets the session type independently, and reads out the session type, the capture rate and the contexts' rates, so a few minutes on the phone separate these.
+
 ## Goals / Non-Goals
 
 **Goals**

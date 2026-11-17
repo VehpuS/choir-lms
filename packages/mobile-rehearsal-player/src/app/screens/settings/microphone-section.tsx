@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { Platform, StyleSheet, Text, View } from 'react-native';
 
 import {
   choiceFromRow,
@@ -19,6 +19,7 @@ import {
   onMicrophoneDevicesChanged,
 } from '../../library/pitch/microphone-choice/microphone-inputs';
 import { MicrophoneOptionList } from '../../library/pitch/microphone-choice/microphone-option-list';
+import { SoundCheckSection } from '../../library/pitch/sound-check/sound-check-section';
 import { appTheme } from '../../utils/theme';
 
 // The inputs connected now, kept current as they are plugged in and removed.
@@ -72,6 +73,7 @@ export const MicrophoneSection = () => {
         rows={settingsRows(choice, inputs)}
         selectedValue={selectedRowValue(choice)}
       />
+      {Platform.OS === 'web' ? <SoundCheckSection /> : null}
     </View>
   );
 };
