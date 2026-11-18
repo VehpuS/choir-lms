@@ -31,6 +31,9 @@ export const createAudioSessionArbiter = (
   // One entry per open capture; each is released once.
   const holds = new Set<object>();
   let previousType: string | null = null;
+  // Once a microphone has been open, the page rests at `playback`, not at the
+  // type it had before (see `apply`).
+  let hasCaptured = false;
   const captureListeners = new Set<() => void>();
 
   const setType = (session: AudioSessionLike, type: string) => {
@@ -64,7 +67,13 @@ export const createAudioSessionArbiter = (
     }
 
     if (previousType !== null) {
-      const type = previousType;
+      // After a capture the page rests at `playback`, not `auto`. On iOS,
+      // Safari keeps the session in play-and-record's call mode (Bluetooth
+      // earbuds in their thin hands-free sound) after the microphone closes for
+      // as long as something audible plays, and `auto` does not release it;
+      // an explicit `playback` does, at once. Seen on a phone with the Sound
+      // check (clear-playback-while-listening, design Findings 6).
+      const type = hasCaptured ? PLAYBACK : previousType;
 
       previousType = null;
       setType(session, type);
@@ -100,9 +109,9 @@ export const createAudioSessionArbiter = (
      */
     holdCapture: (): (() => void) => {
       const hold = {};
-
       const wasCapturing = holds.size > 0;
 
+      hasCaptured = true;
       holds.add(hold);
       apply();
       notifyCapture(wasCapturing);

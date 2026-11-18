@@ -28,6 +28,8 @@
   - 3. Microphone on, then `Session: playback`, then each test sound: thin?
   - 4. Microphone off straight after, then each test sound: thin? Then `Session: playback`: clear?
   - 5. Reload the app after a thin result: still thin? (page state or the headset)
+- [x] 2.8b After a capture the page rests at `playback`, not `auto` (`audio-session-arbiter.ts`; specs): with `playback` selected by hand on the phone, the call mode ended as soon as the microphone closed (2026-11-18). To deploy and confirm on the phone: pitch detection on, then off, with a track playing: the thin sound should end at once, and stay gone across pause and resume
+- [ ] 2.8c **Decision point, with the maintainer:** with the microphone open, were the Sound check's two Web Audio test sounds thin as well as the media element's? If yes, Findings 6 point 3 holds: pause 2.9 and 2.10, decide whether to turn the engine rule off (it costs mono and a preparing wait and does not clear the sound) and go for the notice (design Decision 4) and the native probe (`native-playback-follow-ups` 1.12(g)). If the Web Audio sounds were clear, the engine path stands and 2.9 continues
 - [ ] 2.9 Update `docs/mobile-cross-platform-audio-playback.md` (the two strategies, the rule, the hand-over, prepared listening audio) and the README if the development focus changes
 - [ ] 2.10 **Maintainer, stage 1 on the phone with the earbuds, home-screen web app:** a queue with pitch detection on stays clear across songs, pause and resume, loops, and a speed and pitch change; turning `Listen` on and off mid-song does not restart or jump; the piano is still audible with the silent switch on; background playback without listening is as before. Chrome on a Mac: the same flows work
 

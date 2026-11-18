@@ -92,6 +92,17 @@ What WebKit's source (read 2026-11-15) adds: `MediaSessionManagerCocoa::updateSe
 
 Candidate causes, none shown yet: (a) the sticky play-and-record above; (b) the app's audio context, or the audio prepared in it, runs at a narrowband rate because it was created or prepared while the headset was in its hands-free mode (prepared audio is stored at the context's rate); (c) the OS keeps the headset in hands-free after the capture stops; (d) the track was not on the engine at all. The Sound check (`library/pitch/sound-check/`, Settings > Microphone, experimental) plays a test sound through each path, opens the microphone and sets the session type independently, and reads out the session type, the capture rate and the contexts' rates, so a few minutes on the phone separate these.
 
+### 6. Third device round, with the Sound check (maintainer, 2026-11-18)
+
+- **No combination** of test sound, microphone and session type avoided the call mode while the microphone was open.
+- With **`Session: playback`**, the call mode starts when the microphone opens and **ends the moment it closes**. With `auto` it lingered after the microphone was off (Findings 5).
+
+What follows:
+
+1. The lingering was Safari keeping play-and-record's call mode after the capture, as `MediaSessionManagerCocoa` does while something audible plays. **Fixed in the arbiter:** after a capture the page rests at `playback`, not at the type it had before.
+2. The call mode **while the microphone is open** cannot be avoided from the page on these earbuds. The page has no other lever than the session type, and none helped.
+3. **Decision 1 is in doubt.** It assumed Web Audio playback stays clear while a microphone is open. The composite result (first round) and the browser DAW (Soundtrap) were both mono material, which a mono call-mode route would not reveal as thin. If the Sound check's Web Audio test sounds were thin with the microphone open too (to confirm, task 2.8b), then playing from the engine buys nothing while listening and costs mono audio and a preparing wait, and stages 1 and 2 as designed do not fix the report. What remains for the web is to say so (Decision 4); the fix is the native session of `native-playback-follow-ups` 1.12(g).
+
 ## Goals / Non-Goals
 
 **Goals**
