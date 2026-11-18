@@ -6,6 +6,10 @@ import {
   buttonInteractionGuardStyle,
   interactionGuardProps,
 } from '../../../components/interaction-guard';
+import {
+  setListeningEngineOffForTest,
+  useListeningEngineOffForTest,
+} from '../../playback/listening-engine/listening-override';
 import { appTheme } from '../../../utils/theme';
 import { MicrophoneOptionList } from '../microphone-choice/microphone-option-list';
 import {
@@ -59,6 +63,7 @@ export const SoundCheckSection = () => {
     check.getState,
     check.getState,
   );
+  const isEngineOff = useListeningEngineOffForTest();
   const [readout, setReadout] = useState(() => check.readReadout());
 
   useEffect(() => {
@@ -102,6 +107,15 @@ export const SoundCheckSection = () => {
           void check.toggleMicrophone();
         }}
       />
+      <Switch
+        checked={isEngineOff}
+        label={SOUND_CHECK_COPY.keepOnElement}
+        onPress={() => {
+          setListeningEngineOffForTest(!isEngineOff);
+          setReadout(check.readReadout());
+        }}
+      />
+      <Text style={styles.body}>{SOUND_CHECK_COPY.keepOnElementNote}</Text>
       <MicrophoneOptionList
         accessibilityLabel={SOUND_CHECK_COPY.sessionTitle}
         onSelect={(value) => {

@@ -51,7 +51,7 @@ void runScenario({
       async () =>
         (await readoutText(page)).includes('Track player: media element') &&
         (await readoutText(page)).includes(
-          'Listening rule: microphone no, recording tool no, app hidden no',
+          'Listening rule: microphone no, recording tool no, app hidden no, kept on media element by test no',
         ),
       'the readout does not say where the track plays and what the rule reads',
     );
@@ -129,6 +129,22 @@ void runScenario({
       'the session type did not change to playback',
     );
     pass('The session type follows the microphone and the buttons set it');
+
+    // The test switch that keeps tracks on the media element is read out too.
+    await page
+      .getByRole('switch', {
+        name: 'Keep tracks on the media element while listening',
+        exact: true,
+      })
+      .click();
+    await waitUntil(
+      async () =>
+        (await readoutText(page)).includes('kept on media element by test yes'),
+      'the listening rule did not see the test switch',
+    );
+    pass(
+      'The test switch that keeps tracks on the media element shows in the readout',
+    );
 
     await page.getByRole('switch', { name: 'Microphone', exact: true }).click();
     await waitUntil(

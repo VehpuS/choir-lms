@@ -46,6 +46,7 @@ const listening = {
   isMicrophoneOpen: true,
   isRecordingToolOpen: false,
   isAppHidden: false,
+  isEngineOffForTest: false,
 };
 
 describe('shouldPlayOnListeningEngine', () => {
@@ -87,6 +88,16 @@ describe('shouldPlayOnListeningEngine', () => {
     );
   });
 
+  it('is not while the Sound check keeps tracks on the media element', () => {
+    assert.equal(
+      shouldPlayOnListeningEngine(trackItem(), {
+        ...listening,
+        isEngineOffForTest: true,
+      }),
+      false,
+    );
+  });
+
   it('leaves a composite to its own load and a recording item on the media element', () => {
     assert.equal(shouldPlayOnListeningEngine(compositeItem, listening), false);
     assert.equal(
@@ -106,6 +117,7 @@ const load = (overrides: Partial<LoadListeningItemOptions> = {}) => {
     isMicrophoneOpen: true,
     isRecordingToolOpen: false,
     isAppHidden: false,
+    isEngineOffForTest: false,
     player: { reset: async () => void calls.push('reset') },
     loads: {
       supersede: () => undefined,

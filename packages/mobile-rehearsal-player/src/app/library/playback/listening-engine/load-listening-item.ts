@@ -24,6 +24,8 @@ export type ListeningRuleState = {
   isMicrophoneOpen: boolean;
   isRecordingToolOpen: boolean;
   isAppHidden: boolean;
+  /** The Sound check's test switch keeps tracks on the media element. */
+  isEngineOffForTest: boolean;
 };
 
 export const shouldPlayOnListeningEngine = (
@@ -33,6 +35,7 @@ export const shouldPlayOnListeningEngine = (
   state.isMicrophoneOpen &&
   !state.isRecordingToolOpen &&
   !state.isAppHidden &&
+  !state.isEngineOffForTest &&
   !isCompositeSource(item.source) &&
   item.recordingId === undefined;
 
@@ -42,6 +45,7 @@ export type LoadListeningItemOptions = {
   isMicrophoneOpen: boolean;
   isRecordingToolOpen: boolean;
   isAppHidden: boolean;
+  isEngineOffForTest: boolean;
   player: CompositeLoadPlayer;
   loads: ListeningTrackLoads;
   volume: number;

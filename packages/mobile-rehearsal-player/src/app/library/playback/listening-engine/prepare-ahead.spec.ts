@@ -32,6 +32,7 @@ const listening = {
   isMicrophoneOpen: true,
   isRecordingToolOpen: false,
   isAppHidden: false,
+  isEngineOffForTest: false,
 };
 
 describe('resolveTrackToPrepareAhead', () => {

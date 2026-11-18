@@ -13,6 +13,9 @@ export const SOUND_CHECK_COPY = {
   mediaElement: 'Test sound: media element',
   microphone: 'Microphone',
   sessionTitle: 'Audio session type',
+  keepOnElement: 'Keep tracks on the media element while listening',
+  keepOnElementNote:
+    'A test switch: with pitch detection on, a track you play stays on the media element instead of moving to the web audio engine. Off after a reload.',
 } as const;
 
 export type SessionTypeChoice = { label: string; value: string };
@@ -37,6 +40,7 @@ export type RuleReading = {
   isMicrophoneOpen: boolean;
   isRecordingToolOpen: boolean;
   isAppHidden: boolean;
+  isEngineOffForTest: boolean;
 };
 
 export type TrackPlayerReading =
@@ -109,6 +113,6 @@ export const describeReadout = (readout: SoundCheckReadout): string[] => [
   `Test audio context: ${formatContext(readout.testContext)}`,
   `Media element sound: ${readout.isMediaElementPlaying ? 'playing' : 'off'}`,
   `Track player: ${TRACK_PLAYER_TEXT[readout.trackPlayer]}`,
-  `Listening rule: microphone ${yesNo(readout.rule.isMicrophoneOpen)}, recording tool ${yesNo(readout.rule.isRecordingToolOpen)}, app hidden ${yesNo(readout.rule.isAppHidden)}`,
+  `Listening rule: microphone ${yesNo(readout.rule.isMicrophoneOpen)}, recording tool ${yesNo(readout.rule.isRecordingToolOpen)}, app hidden ${yesNo(readout.rule.isAppHidden)}, kept on media element by test ${yesNo(readout.rule.isEngineOffForTest)}`,
   `Track could not be prepared: ${readout.trackFallback ?? 'no'}`,
 ];

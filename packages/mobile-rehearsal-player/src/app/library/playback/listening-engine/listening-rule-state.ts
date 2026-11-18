@@ -1,5 +1,9 @@
 import { useSyncExternalStore } from 'react';
 
+import {
+  isListeningEngineOffForTest,
+  subscribeListeningOverride,
+} from './listening-override';
 import type { ListeningRuleState } from './load-listening-item';
 
 import { webAudioSession } from '../../../components/audio-session/web-audio-session';
@@ -19,6 +23,7 @@ export const getListeningRuleState = (): ListeningRuleState => ({
   isMicrophoneOpen: webAudioSession.isCapturing(),
   isRecordingToolOpen: isRecordingStripOpen(),
   isAppHidden: !appVisibility.isVisible(),
+  isEngineOffForTest: isListeningEngineOffForTest(),
 });
 
 const subscribe = (listener: () => void) => {
@@ -27,11 +32,13 @@ const subscribe = (listener: () => void) => {
   // Hiding the app is acted on directly, not through the microphone closing:
   // the hand-back to the media element has to start before the page is slowed.
   const stopVisibility = appVisibility.subscribe(listener);
+  const stopOverride = subscribeListeningOverride(listener);
 
   return () => {
     stopCapture();
     stopStrip();
     stopVisibility();
+    stopOverride();
   };
 };
 
@@ -39,7 +46,7 @@ const subscribe = (listener: () => void) => {
 const getKey = () => {
   const state = getListeningRuleState();
 
-  return `${state.isMicrophoneOpen}:${state.isRecordingToolOpen}:${state.isAppHidden}`;
+  return `${state.isMicrophoneOpen}:${state.isRecordingToolOpen}:${state.isAppHidden}:${state.isEngineOffForTest}`;
 };
 
 /** Changes whenever the rule's state does. */

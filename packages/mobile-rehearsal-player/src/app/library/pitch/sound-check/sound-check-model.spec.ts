@@ -20,6 +20,7 @@ const base: SoundCheckReadout = {
     isMicrophoneOpen: true,
     isRecordingToolOpen: false,
     isAppHidden: false,
+    isEngineOffForTest: false,
   },
   trackFallback: null,
 };
@@ -34,7 +35,7 @@ describe('describeReadout', () => {
       'Test audio context: none',
       'Media element sound: off',
       'Track player: web audio engine (single track)',
-      'Listening rule: microphone yes, recording tool no, app hidden no',
+      'Listening rule: microphone yes, recording tool no, app hidden no, kept on media element by test no',
       'Track could not be prepared: no',
     ]);
   });
@@ -64,6 +65,7 @@ describe('describeReadout', () => {
         isMicrophoneOpen: true,
         isRecordingToolOpen: true,
         isAppHidden: true,
+        isEngineOffForTest: true,
       },
       trackFallback: 'no-room',
     });
@@ -71,7 +73,7 @@ describe('describeReadout', () => {
     assert.equal(lines[6], 'Track player: media element');
     assert.equal(
       lines[7],
-      'Listening rule: microphone yes, recording tool yes, app hidden yes',
+      'Listening rule: microphone yes, recording tool yes, app hidden yes, kept on media element by test yes',
     );
     assert.equal(lines[8], 'Track could not be prepared: no-room');
     assert.equal(

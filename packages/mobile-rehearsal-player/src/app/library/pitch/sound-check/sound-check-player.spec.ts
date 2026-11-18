@@ -97,6 +97,7 @@ const setup = (overrides: Partial<SoundCheckDependencies> = {}) => {
       isMicrophoneOpen: isCapturing,
       isRecordingToolOpen: false,
       isAppHidden: false,
+      isEngineOffForTest: false,
     }),
     getTrackFallback: () => null,
     microphone: {
