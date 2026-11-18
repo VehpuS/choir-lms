@@ -12,7 +12,15 @@ import type { CompositeTrack } from '@org/audio-library-models';
 import { createDefaultMix, startSessionMix } from '@org/audio-mixing';
 
 import { hasRenderedText } from '../../../../test-support/rendered-text';
-import { CompositeMixPanelView } from './composite-mix-panel';
+import {
+  clearActiveCompositeEngine,
+  setActiveCompositeEngine,
+} from '../playback/active-composite';
+import { createTestEngine } from '../playback/composite-test-engine';
+import {
+  CompositeMixPanel,
+  CompositeMixPanelView,
+} from './composite-mix-panel';
 
 const stems: CompositeTrack['stems'] = [
   { id: 's', trackId: 't-s', name: 'Soprano', offsetMs: 0, mine: false },
@@ -129,5 +137,17 @@ describe('CompositeMixPanelView', () => {
     fireEvent.press(screen.getByLabelText('Remove Soprano'));
 
     assert.deepEqual(calls, ['remove:s']);
+  });
+});
+
+describe('CompositeMixPanel for a single track on the engine', () => {
+  afterEach(() => clearActiveCompositeEngine());
+
+  it('renders nothing: the item is a track, not a composite', () => {
+    setActiveCompositeEngine(createTestEngine().engine, 'track');
+
+    const view = render(<CompositeMixPanel compositeId="track-1" />);
+
+    assert.equal(view.toJSON(), null);
   });
 });

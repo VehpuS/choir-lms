@@ -13,6 +13,7 @@ import {
   useCompositeEnded,
   useCompositeEngineState,
   useCompositeProgress,
+  useIsCompositePlaying,
 } from './use-active-composite.js';
 
 afterEach(() => {
@@ -78,5 +79,17 @@ describe('active composite hooks', () => {
     });
 
     assert.equal(ended, 1);
+  });
+
+  it('says a composite is playing only for a composite, not a single track on the engine', () => {
+    const { result } = renderHook(() => useIsCompositePlaying());
+
+    assert.equal(result.current, false);
+
+    act(() => setActiveCompositeEngine(createTestEngine().engine));
+    assert.equal(result.current, true);
+
+    act(() => setActiveCompositeEngine(createTestEngine().engine, 'track'));
+    assert.equal(result.current, false);
   });
 });

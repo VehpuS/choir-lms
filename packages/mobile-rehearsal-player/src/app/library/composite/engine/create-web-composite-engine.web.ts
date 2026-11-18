@@ -52,6 +52,10 @@ export const getCompositeAudioContext = (): WebCompositeContext | null => {
   return sharedContext;
 };
 
+/** The context if one was created already; never creates it (the Sound check reads it). */
+export const peekCompositeAudioContext = (): WebCompositeContext | null =>
+  sharedContext;
+
 // The processor registers once per context; a failure is remembered so a
 // device that cannot load it is not asked again on every composite.
 const processorLoads = new WeakMap<object, Promise<boolean>>();

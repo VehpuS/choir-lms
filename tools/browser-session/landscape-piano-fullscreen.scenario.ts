@@ -1,7 +1,7 @@
 import type { Locator, Page } from 'playwright';
 
 import { buildMockSource } from '../../packages/mobile-rehearsal-player/src/test-support/mock-library/mock-library-fixtures';
-import { readMediaState } from './media-probe';
+import { readAppIsPlaying } from './media-probe';
 import { buildToneMedia } from './mock-media';
 import { openPiano, WAIT_MS } from './piano-helpers';
 import { waitForTrack, waitUntil } from './page-helpers';
@@ -54,7 +54,7 @@ const isReachable = (target: Locator) =>
 
 const isPaused = (page: Page, expected: boolean) =>
   waitUntil(
-    async () => (await readMediaState(page))?.paused === expected,
+    async () => (await readAppIsPlaying(page)) !== expected,
     expected ? 'the track did not pause' : 'the track did not play',
   );
 

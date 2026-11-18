@@ -211,6 +211,10 @@ export const openMockLibrarySession = async (options: {
     options.viewport ??
     (options.profile ? undefined : { height: 844, width: 390 });
   const context = await browser.newContext({
+    // The app shows dates in the device's time zone and scenarios expect
+    // fixed times, so every run uses UTC whatever machine it runs on (a
+    // device profile may still set its own).
+    timezoneId: 'UTC',
     ...(options.profile ? contextOptionsFor(options.profile) : {}),
     // Only what was asked for: an `undefined` here would replace the device
     // descriptor's own viewport and pixel ratio with Playwright's defaults,

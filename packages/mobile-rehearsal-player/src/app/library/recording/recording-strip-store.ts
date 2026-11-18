@@ -11,7 +11,8 @@ const publish = (next: boolean) => {
   listeners.forEach((listener) => listener());
 };
 
-const subscribe = (listener: () => void) => {
+/** Called when the strip opens or closes. */
+export const subscribeRecordingStrip = (listener: () => void) => {
   listeners.add(listener);
 
   return () => {
@@ -45,5 +46,9 @@ export const toggleRecordingStrip = () => {
 };
 
 export const useRecordingStripOpen = (): boolean => {
-  return useSyncExternalStore(subscribe, isRecordingStripOpen, () => false);
+  return useSyncExternalStore(
+    subscribeRecordingStrip,
+    isRecordingStripOpen,
+    () => false,
+  );
 };

@@ -26,6 +26,8 @@ export type StoredPreparedStem = PreparedStemKey & {
   sizeBytes: number;
   /** For the composite waveform (design Decision 8); absent for a silent or very short stem. */
   peaks?: WaveformPeaks;
+  /** When it was last prepared or played, for least-recently-used eviction; absent on older records. */
+  lastUsedAt?: number;
 };
 
 /**
@@ -70,6 +72,8 @@ export type PreparedCompositeUsage = {
   /** Stems with a complete or partly written copy. */
   stemCount: number;
   sizeBytes: number;
+  /** The latest use of any of its stems; absent when none recorded one. */
+  lastUsedAt?: number;
 };
 
 export type PreparedStemStore = {
@@ -82,11 +86,16 @@ export type PreparedStemStore = {
   open: (key: PreparedStemKey) => Promise<PcmWindowReader | null>;
   /** The stem's waveform peaks, when it is complete at this version and has them. */
   getPeaks: (key: PreparedStemKey) => Promise<WaveformPeaks | null>;
+  /** Records that the stem was played now; nothing happens when `open` would not find it. */
+  markUsed: (key: PreparedStemKey) => Promise<void>;
   /** Whether `open` would find the stem. */
   has: (key: PreparedStemKey) => Promise<boolean>;
   sizeBytes: () => Promise<number>;
   sizeBytesOfComposite: (compositeId: string) => Promise<number>;
-  /** Each composite that has prepared stems, with their total size, for the offline files view. */
+  /**
+   * Each owner that has prepared stems, with their total size. Owners are
+   * composites and single tracks prepared for listening (`prepared-owner.ts`).
+   */
   listComposites: () => Promise<PreparedCompositeUsage[]>;
   deleteComposite: (compositeId: string) => Promise<void>;
   deleteAll: () => Promise<void>;

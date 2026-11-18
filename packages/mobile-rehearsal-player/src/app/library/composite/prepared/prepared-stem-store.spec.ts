@@ -20,10 +20,17 @@ const key = (overrides: Partial<PreparedStemKey> = {}): PreparedStemKey => ({
   ...overrides,
 });
 
+const START_MS = 1000;
+
 const setup = () => {
   const memory = createMemoryPreparedStemsBackend();
+  const clock = { now: START_MS };
 
-  return { ...memory, store: createPreparedStemStore(memory.backend) };
+  return {
+    ...memory,
+    clock,
+    store: createPreparedStemStore(memory.backend, () => clock.now),
+  };
 };
 
 type Setup = ReturnType<typeof setup>;
@@ -160,11 +167,13 @@ describe('prepared stem store', () => {
         compositeId: 'composite-1',
         stemCount: 2,
         sizeBytes: 5 * BYTES_PER_SAMPLE,
+        lastUsedAt: START_MS,
       },
       {
         compositeId: 'composite-2',
         stemCount: 1,
         sizeBytes: BYTES_PER_SAMPLE,
+        lastUsedAt: START_MS,
       },
     ]);
   });
@@ -191,6 +200,33 @@ describe('prepared stem store', () => {
       preparedStemId(key({ compositeId: 'a:b', stemId: 'c' })),
       preparedStemId(key({ compositeId: 'a', stemId: 'b:c' })),
     );
+  });
+});
+
+describe('prepared stem store last use', () => {
+  it('reports the latest use of an owner, moved on by markUsed', async () => {
+    const t = setup();
+
+    await prepare(t, key({ stemId: 'a' }), [Int16Array.of(1)]);
+    t.clock.now = 5000;
+    await prepare(t, key({ stemId: 'b' }), [Int16Array.of(1)]);
+
+    assert.equal((await t.store.listComposites())[0].lastUsedAt, 5000);
+
+    t.clock.now = 9000;
+    await t.store.markUsed(key({ stemId: 'a' }));
+
+    assert.equal((await t.store.listComposites())[0].lastUsedAt, 9000);
+  });
+
+  it('ignores markUsed for a stem that cannot be read', async () => {
+    const t = setup();
+
+    await t.store.markUsed(key());
+    await prepare(t, key(), [Int16Array.of(1)]);
+    await t.store.markUsed(key({ contentVersion: 'v2' }));
+
+    assert.equal((await t.store.listComposites())[0].lastUsedAt, START_MS);
   });
 });
 

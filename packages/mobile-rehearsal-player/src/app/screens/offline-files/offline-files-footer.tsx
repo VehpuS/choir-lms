@@ -2,6 +2,7 @@ import { StyleSheet, View } from 'react-native';
 
 import { OutlinedActionButton } from '../../components/outlined-action-button';
 import type { PreparedCompositesSummary } from '../../library/composite/prepared/prepared-composites-model';
+import type { PreparedListeningSummary } from '../../library/playback/listening-engine/prepared-listening-model';
 import type { OfflineFileRow } from '../../library/offline/offline-storage-model';
 import type { OfflineStorageService } from '../../library/offline/offline-storage-service';
 import type { LibraryFilesConfirmationDialogContent } from '../../library/selection/library-files-confirmation-dialog';
@@ -15,6 +16,11 @@ import {
 type OfflineFilesFooterProps = {
   allRows: readonly OfflineFileRow[];
   automaticRows: readonly OfflineFileRow[];
+  /** Audio prepared for single tracks; cleared by the same store call as `prepared`. */
+  listening: {
+    refresh: () => Promise<void>;
+    summary: PreparedListeningSummary;
+  };
   prepared: {
     clearAll: () => Promise<void>;
     summary: PreparedCompositesSummary;
@@ -28,11 +34,13 @@ type OfflineFilesFooterProps = {
 
 /**
  * `Clear automatic cache` and `Clear all`. `Clear all` also clears the prepared
- * composite stems, and its confirmation says so (composite-tracks 9.1).
+ * composite stems and the audio prepared for listening, and its confirmation
+ * says so.
  */
 export const OfflineFilesFooter = ({
   allRows,
   automaticRows,
+  listening,
   prepared,
   requestConfirmation,
   service,
@@ -53,10 +61,15 @@ export const OfflineFilesFooter = ({
       label={OFFLINE_FILES_COPY.clearAllLabel}
       onPress={() => {
         requestConfirmation({
-          content: getClearAllConfirmation(allRows, prepared.summary),
+          content: getClearAllConfirmation(
+            allRows,
+            prepared.summary,
+            listening.summary,
+          ),
           onConfirm: async () => {
             await service.clearAll();
             await prepared.clearAll();
+            await listening.refresh();
           },
         });
       }}

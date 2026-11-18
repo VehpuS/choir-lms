@@ -6,3 +6,5 @@ export const createWebCompositeEngine = async (): Promise<CompositeEngine> => {
 };
 
 export const getCompositeAudioContext = (): null => null;
+
+export const peekCompositeAudioContext = (): null => null;

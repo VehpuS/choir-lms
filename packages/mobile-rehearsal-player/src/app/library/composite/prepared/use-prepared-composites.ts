@@ -5,6 +5,7 @@ import {
   buildPreparedCompositesSummary,
   type PreparedCompositesSummary,
 } from './prepared-composites-model';
+import { isListeningOwnerId } from './prepared-owner';
 import { getPreparedStemStore } from './prepared-stem-instance';
 import type { PreparedCompositeUsage } from './prepared-stem-types';
 
@@ -22,7 +23,12 @@ export const usePreparedComposites = (): {
   const composites = useComposites();
   const refresh = useCallback(async () => {
     try {
-      setUsage(await getPreparedStemStore().listComposites());
+      const owners = await getPreparedStemStore().listComposites();
+
+      // Single tracks prepared for listening have their own group.
+      setUsage(
+        owners.filter((owner) => !isListeningOwnerId(owner.compositeId)),
+      );
     } catch {
       setUsage([]);
     }

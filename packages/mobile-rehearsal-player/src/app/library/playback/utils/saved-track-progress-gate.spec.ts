@@ -89,4 +89,42 @@ describe('saved track progress gate', () => {
     controller.settle(second);
     assert.deepEqual(changes.at(-1), { epoch: second, settled: true });
   });
+
+  it('shows held progress instead of empty while the same item moves to another player', () => {
+    const held = { buffered: 60, duration: 60, position: 19 };
+
+    assert.equal(
+      resolveGatedSavedTrackProgress({
+        gate: { epoch: 2, settled: false, held },
+        raw: newItem,
+        rawAtSettle: null,
+        releasedEpoch: 1,
+      }),
+      held,
+    );
+    assert.equal(
+      resolveGatedSavedTrackProgress({
+        gate: { epoch: 2, settled: true, held },
+        raw: newItem,
+        rawAtSettle: newItem,
+        releasedEpoch: 1,
+      }),
+      held,
+    );
+  });
+
+  it('carries held progress from begin to settle, and drops it for the next load', () => {
+    const changes: SavedTrackProgressGate[] = [];
+    const controller = createSavedTrackProgressGateController((gate) => {
+      changes.push(gate);
+    });
+    const held = { buffered: 60, duration: 60, position: 19 };
+    const epoch = controller.begin(held);
+
+    controller.settle(epoch);
+    assert.deepEqual(changes.at(-1), { epoch, settled: true, held });
+
+    controller.begin();
+    assert.equal(changes.at(-1)?.held, undefined);
+  });
 });

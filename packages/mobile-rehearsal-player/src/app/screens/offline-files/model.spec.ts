@@ -106,3 +106,32 @@ describe('getClearAllConfirmation with prepared composites', () => {
     assert.doesNotMatch(content.message, /prepared/);
   });
 });
+
+describe('getClearAllConfirmation with audio prepared for listening', () => {
+  it('says that audio goes too and that the tracks stay', () => {
+    const content = getClearAllConfirmation(
+      [],
+      { count: 0, totalBytes: 0 },
+      { count: 3, totalBytes: 48_000_000 },
+    );
+
+    assert.match(
+      content.message,
+      /^This removes the audio prepared for listening of 3 tracks/,
+    );
+    assert.match(content.message, /The tracks stay/);
+  });
+
+  it('comes after the prepared composites', () => {
+    const content = getClearAllConfirmation(
+      [],
+      { count: 1, totalBytes: 4_000_000 },
+      { count: 1, totalBytes: 16_000_000 },
+    );
+
+    assert.match(
+      content.message,
+      /1 composite .*It also removes the audio prepared for listening of 1 track /,
+    );
+  });
+});

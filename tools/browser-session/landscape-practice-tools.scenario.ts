@@ -1,7 +1,7 @@
 import type { Locator, Page } from 'playwright';
 
 import { buildMockSource } from '../../packages/mobile-rehearsal-player/src/test-support/mock-library/mock-library-fixtures';
-import { readMediaState } from './media-probe';
+import { readAppIsPlaying } from './media-probe';
 import { buildToneMedia } from './mock-media';
 import { waitForTrack, waitUntil } from './page-helpers';
 import { clearInsets, emulateInsets, settledBox } from './safe-area-helpers';
@@ -73,10 +73,7 @@ const toggleTool = async (page: Page, label: string, from: 'on' | 'off') => {
 const turnOn = (page: Page, label: string) => toggleTool(page, label, 'off');
 
 const isPlaying = (page: Page) =>
-  waitUntil(
-    async () => (await readMediaState(page))?.paused === false,
-    'the track did not keep playing',
-  );
+  waitUntil(() => readAppIsPlaying(page), 'the track did not keep playing');
 
 void runScenario({
   drive: {

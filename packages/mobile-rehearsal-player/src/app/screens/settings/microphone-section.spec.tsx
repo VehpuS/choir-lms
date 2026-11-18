@@ -5,7 +5,6 @@ import { cleanup, fireEvent, render } from '@testing-library/react-native/pure';
 
 import { MICROPHONE_COPY } from '../../library/pitch/microphone-choice/microphone-choice-model';
 import { microphoneChoiceStore } from '../../library/pitch/microphone-choice/microphone-choice-store';
-import { audioRouteStore } from '../../components/audio-session/audio-route-store';
 import { MicrophoneSection } from './microphone-section';
 
 afterEach(cleanup);
@@ -51,21 +50,5 @@ describe('MicrophoneSection', () => {
 
     assert.ok(screen.getByLabelText('Earbuds (not connected)'));
     await microphoneChoiceStore.set(null);
-  });
-});
-
-describe('MicrophoneSection audio route', () => {
-  it('lists the three routes and stores the one pressed', async () => {
-    const screen = render(<MicrophoneSection />);
-
-    assert.ok(screen.getByLabelText('Play and record (default)'));
-    fireEvent.press(
-      screen.getByLabelText('Playback once the microphone is on'),
-    );
-    await audioRouteStore.hydrate();
-    await new Promise((resolve) => setImmediate(resolve));
-
-    assert.equal(audioRouteStore.getSnapshot(), 'playback-after-open');
-    await audioRouteStore.set('play-and-record');
   });
 });

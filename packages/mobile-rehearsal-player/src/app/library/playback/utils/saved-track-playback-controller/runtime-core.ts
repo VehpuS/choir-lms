@@ -5,6 +5,12 @@ import {
 
 import { loadCompositeEngine } from '../../../composite/playback/composite-engine-loader';
 import { loadCompositeItemIntoPlayer } from '../../../composite/playback/load-composite-item';
+import { createControllerListeningHandover } from './listening-handover';
+import { setAppListeningHandover } from '../../listening-engine/handover';
+import { getListeningFallbackStore } from '../../listening-engine/listening-fallback-state';
+import { getListeningRuleState } from '../../listening-engine/listening-rule-state';
+import { loadItemOnListeningEngine } from '../../listening-engine/load-listening-item';
+import { getListeningTrackLoads } from '../../listening-engine/listening-track-loads';
 
 import { type LoadPlayableItemIntoPlayer } from '../saved-track-duration-resolution';
 import {
@@ -21,6 +27,7 @@ import {
 } from '../saved-track-player-interop';
 import { ensureSavedTrackPlayerReady } from '../saved-track-player-runtime';
 import { getTrackGain } from '../../track-gain';
+import type { SavedTrackProgress } from '../saved-track-progress-gate';
 import { isSavedTrackDownloadAbortError } from '../saved-track-web-download';
 import {
   type SavedTrackPlaybackControllerOptions,
@@ -42,11 +49,16 @@ export type SavedTrackPlaybackRuntimeCore = {
   readLivePlaybackSnapshot: () => Promise<LivePlaybackSnapshot | null>;
   resumePlayableItem: (playableItem: PlayableItem) => Promise<void>;
   /** Runs `task` as a load: progress is hidden until it settles (8.35). */
-  runAsLoad: <Result>(task: () => Promise<Result>) => Promise<Result>;
+  runAsLoad: <Result>(
+    task: () => Promise<Result>,
+    heldProgress?: SavedTrackProgress,
+  ) => Promise<Result>;
   seekActivePlayableItemTo: (
     playableItem: PlayableItem,
     positionSeconds: number,
   ) => Promise<void>;
+  /** Moves the playing track between the media element and the engine as the rule asks. */
+  syncListeningPlayer: () => Promise<void>;
 };
 
 export const createSavedTrackPlaybackRuntimeCore = (
@@ -54,8 +66,11 @@ export const createSavedTrackPlaybackRuntimeCore = (
 ): SavedTrackPlaybackRuntimeCore => {
   let loadsInFlight = 0;
 
-  const runAsLoad = async <Result>(task: () => Promise<Result>) => {
-    const epoch = options.progressGate.begin();
+  const runAsLoad = async <Result>(
+    task: () => Promise<Result>,
+    heldProgress?: SavedTrackProgress,
+  ) => {
+    const epoch = options.progressGate.begin(heldProgress);
 
     loadsInFlight += 1;
 
@@ -101,8 +116,9 @@ export const createSavedTrackPlaybackRuntimeCore = (
     accessToken,
     loadOptions,
   ) => {
-    return runAsLoad(() =>
-      loadIntoPlayer(playableItem, accessToken, loadOptions),
+    return runAsLoad(
+      () => loadIntoPlayer(playableItem, accessToken, loadOptions),
+      loadOptions?.heldProgress,
     );
   };
 
@@ -125,6 +141,11 @@ export const createSavedTrackPlaybackRuntimeCore = (
     accessToken,
     loadOptions,
   ) => {
+    // Whatever loads now replaces a track still being prepared for the engine,
+    // and what was said about the last track no longer applies.
+    getListeningTrackLoads().supersede();
+    getListeningFallbackStore().clear();
+
     // A composite has no Drive file or media element: it loads through its own
     // engine (task 3.5), after the player is reset to release the last track.
     if (isCompositeSource(playableItem.source)) {
@@ -164,6 +185,31 @@ export const createSavedTrackPlaybackRuntimeCore = (
 
     await ensureSavedTrackPlayerReady();
     const trackPlayer = getSavedTrackPlayer();
+    const volume = options.volumeLevelRef.current * getTrackGain();
+
+    // While a microphone is open the track plays through the Web Audio engine
+    // (clear-playback-while-listening design Decision 1).
+    const isOnEngine = await loadItemOnListeningEngine({
+      item: playbackRequest.playableItem,
+      accessToken,
+      ...getListeningRuleState(),
+      player: trackPlayer,
+      loads: getListeningTrackLoads(),
+      volume,
+      initialPositionSeconds,
+      shouldPlay: loadOptions?.shouldPlay ?? true,
+      applyShaping: () =>
+        applyAmbientShaping(playbackRequest.playableItem.transform),
+      onFallback: (error) =>
+        getListeningFallbackStore().report(
+          playbackRequest.playableItem.source.id,
+          error,
+        ),
+    });
+
+    if (isOnEngine) {
+      return playbackRequest.playableItem;
+    }
 
     await trackPlayer.reset();
     await trackPlayer.add({
@@ -172,9 +218,7 @@ export const createSavedTrackPlaybackRuntimeCore = (
         getSavedTrackPlayerModule().PitchAlgorithm,
       ),
     });
-    await trackPlayer.setVolume(
-      options.volumeLevelRef.current * getTrackGain(),
-    );
+    await trackPlayer.setVolume(volume);
     await applyAmbientShaping(playbackRequest.playableItem.transform);
 
     if (initialPositionSeconds > 0) {
@@ -288,6 +332,18 @@ export const createSavedTrackPlaybackRuntimeCore = (
     }
   };
 
+  // The track that is playing follows the rule too (design Decision 4).
+  const handover = createControllerListeningHandover({
+    options,
+    applyAmbientShaping,
+    isLoadInFlight: () => loadsInFlight > 0,
+    loadPlayableItemIntoPlayer,
+    readLivePlaybackSnapshot,
+    runAsLoad,
+  });
+
+  setAppListeningHandover(handover);
+
   return {
     canLoadPlayableItem,
     isLoadInFlight: () => loadsInFlight > 0,
@@ -298,5 +354,6 @@ export const createSavedTrackPlaybackRuntimeCore = (
     resumePlayableItem,
     runAsLoad,
     seekActivePlayableItemTo,
+    syncListeningPlayer: handover.sync,
   };
 };

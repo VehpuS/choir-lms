@@ -42,6 +42,7 @@ export type SavedTrackPlaybackRuntimeCommands = {
   seekActivePlaybackToPosition: (positionSeconds: number) => Promise<void>;
   setPlaybackVolume: (nextVolumeLevel: number) => Promise<void>;
   syncActivePlayableItem: (playableItem: PlayableItem) => Promise<boolean>;
+  syncListeningPlayer: () => Promise<void>;
   togglePlayableItemPlayback: (playableItem: PlayableItem) => Promise<void>;
 };
 
@@ -61,6 +62,7 @@ export const createSavedTrackPlaybackRuntimeCommands = (
   } = runtimeCore;
 
   return {
+    syncListeningPlayer: runtimeCore.syncListeningPlayer,
     canLoadPlayableItem,
     loadPlayableItem,
     loadPlayableItemIntoPlayer,

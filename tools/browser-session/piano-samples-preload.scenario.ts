@@ -17,22 +17,25 @@ void runScenario({
   library: { playlists: [], sources: [alto] },
   requires: ['chromium', 'firefox'],
   steps: async ({ page, pass }) => {
-    // Requests are counted per document: the page that was open before the
+    // Requests are counted per document. The page that was open before the
     // reload may run its own warm-up (it waits for the browser to be idle)
-    // after the listener is attached, and those requests are not this launch's.
+    // after the reload's navigation request is sent and before the new
+    // document commits, and those requests are not this launch's. So a new
+    // document starts counting when its navigation commits, not when the
+    // request goes out (history pushes by the router send no navigation
+    // request, so they do not start one).
     const requestsByDocument = new Map<number, string[]>();
     let currentDocument = 0;
+    let navigationPending = false;
     const sampleRequestsNow = () =>
       requestsByDocument.get(currentDocument) ?? [];
 
     page.on('request', (request) => {
-      // A new document starts with its own navigation request (history pushes
-      // by the router make none).
       if (
         request.isNavigationRequest() &&
         request.frame() === page.mainFrame()
       ) {
-        currentDocument += 1;
+        navigationPending = true;
       }
 
       if (/\.mp3(\?|$)/.test(request.url())) {
@@ -40,6 +43,12 @@ void runScenario({
           ...sampleRequestsNow(),
           request.url(),
         ]);
+      }
+    });
+    page.on('framenavigated', (frame) => {
+      if (frame === page.mainFrame() && navigationPending) {
+        navigationPending = false;
+        currentDocument += 1;
       }
     });
 
@@ -59,7 +68,7 @@ void runScenario({
     assert.equal(
       sampleRequestsNow().length,
       SAMPLE_COUNT,
-      'opening the piano fetched the recordings again instead of using the warmed ones',
+      `opening the piano fetched the recordings again instead of using the warmed ones (${new Set(sampleRequestsNow()).size} distinct of ${sampleRequestsNow().length} requests)`,
     );
     pass('Opening the piano fetches nothing more');
   },

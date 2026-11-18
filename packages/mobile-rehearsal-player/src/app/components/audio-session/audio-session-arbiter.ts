@@ -24,29 +24,17 @@ export type AudioSessionLease = {
 const PLAYBACK = 'playback';
 const PLAY_AND_RECORD = 'play-and-record';
 
-/**
- * What the session is while the microphone is open (a Settings experiment, to
- * find what keeps Bluetooth earbuds out of iOS's thin call mode):
- *  - `play-and-record`: the type for playing and capturing at once (default);
- *  - `auto`: the page asks for nothing; the browser decides;
- *  - `playback-after-open`: `play-and-record` only to start the capture, then
- *    `playback` once the stream is running (some iOS versions keep capturing).
- */
-export type AudioRoute = 'play-and-record' | 'auto' | 'playback-after-open';
-
-export const DEFAULT_AUDIO_ROUTE: AudioRoute = 'play-and-record';
-
-/** Release it when the microphone closes; `opened` says the stream is running. */
-export type CaptureHold = (() => void) & { opened: () => void };
-
-type Hold = { route: AudioRoute; isOpened: boolean };
-
 export const createAudioSessionArbiter = (
   getSession: () => AudioSessionLike | undefined,
 ) => {
   let wantsPlayback = false;
-  const holds = new Set<Hold>();
+  // One entry per open capture; each is released once.
+  const holds = new Set<object>();
   let previousType: string | null = null;
+  // Once a microphone has been open, the page rests at `playback`, not at the
+  // type it had before (see `apply`).
+  let hasCaptured = false;
+  const captureListeners = new Set<() => void>();
 
   const setType = (session: AudioSessionLike, type: string) => {
     try {
@@ -54,24 +42,6 @@ export const createAudioSessionArbiter = (
     } catch {
       // A browser that refuses the type; things go on as they were.
     }
-  };
-
-  const wantedWhileCapturing = (): string | null => {
-    const types = [...holds].map((hold) => {
-      if (hold.route === 'auto') {
-        return null;
-      }
-
-      return hold.route === 'playback-after-open' && hold.isOpened
-        ? PLAYBACK
-        : PLAY_AND_RECORD;
-    });
-
-    if (types.includes(PLAY_AND_RECORD)) {
-      return PLAY_AND_RECORD;
-    }
-
-    return types.includes(PLAYBACK) ? PLAYBACK : null;
   };
 
   const apply = () => {
@@ -84,7 +54,7 @@ export const createAudioSessionArbiter = (
     // Capturing needs input (and so wins over the piano's request); with no
     // capture the piano's request; otherwise nothing.
     const wanted =
-      holds.size > 0 ? wantedWhileCapturing() : wantsPlayback ? PLAYBACK : null;
+      holds.size > 0 ? PLAY_AND_RECORD : wantsPlayback ? PLAYBACK : null;
 
     if (wanted !== null) {
       if (previousType === null) {
@@ -97,10 +67,23 @@ export const createAudioSessionArbiter = (
     }
 
     if (previousType !== null) {
-      const type = previousType;
+      // After a capture the page rests at `playback`, not `auto`. On iOS,
+      // Safari keeps the session in play-and-record's call mode (Bluetooth
+      // earbuds in their thin hands-free sound) after the microphone closes for
+      // as long as something audible plays, and `auto` does not release it;
+      // an explicit `playback` does, at once. Seen on a phone with the Sound
+      // check (clear-playback-while-listening, design Findings 6).
+      const type = hasCaptured ? PLAYBACK : previousType;
 
       previousType = null;
       setType(session, type);
+    }
+  };
+
+  // Only the edges matter to listeners: the first hold, and the last release.
+  const notifyCapture = (wasCapturing: boolean) => {
+    if (wasCapturing !== holds.size > 0) {
+      captureListeners.forEach((listener) => listener());
     }
   };
 
@@ -121,28 +104,34 @@ export const createAudioSessionArbiter = (
       },
     }),
     /**
-     * The microphone is open: the session follows `route` until the returned
-     * function is called (once), whatever else is playing.
+     * The microphone is open: the session is `play-and-record` until the
+     * returned function is called (once), whatever else is playing.
      */
-    holdCapture: (route: AudioRoute = DEFAULT_AUDIO_ROUTE): CaptureHold => {
-      const hold: Hold = { route, isOpened: false };
+    holdCapture: (): (() => void) => {
+      const hold = {};
+      const wasCapturing = holds.size > 0;
 
+      hasCaptured = true;
       holds.add(hold);
       apply();
+      notifyCapture(wasCapturing);
 
-      const release = () => {
+      return () => {
         if (holds.delete(hold)) {
           apply();
+          notifyCapture(true);
         }
       };
-      const opened = () => {
-        if (holds.has(hold) && !hold.isOpened) {
-          hold.isOpened = true;
-          apply();
-        }
-      };
+    },
+    /** Whether any microphone is open now. */
+    isCapturing: (): boolean => holds.size > 0,
+    /** Called when the first microphone opens and when the last one closes. */
+    subscribeCapture: (listener: () => void) => {
+      captureListeners.add(listener);
 
-      return Object.assign(release, { opened });
+      return () => {
+        captureListeners.delete(listener);
+      };
     },
   };
 };
