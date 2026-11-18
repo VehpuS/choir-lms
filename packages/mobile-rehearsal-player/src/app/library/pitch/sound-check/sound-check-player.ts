@@ -6,7 +6,9 @@ import {
 import {
   levelDb,
   type ContextReading,
+  type RuleReading,
   type SoundCheckReadout,
+  type TrackPlayerReading,
 } from './sound-check-model';
 
 /**
@@ -69,6 +71,10 @@ export type SoundCheckDependencies = {
   setSessionType: (type: string) => void;
   isCapturing: () => boolean;
   microphone: Pick<PcmSource, 'subscribe'>;
+  /** What the track that is loaded plays on, and what the listening rule says. */
+  getTrackPlayer: () => TrackPlayerReading;
+  getRule: () => RuleReading;
+  getTrackFallback: () => string | null;
 };
 
 const ELEMENT_SAMPLE_RATE = 44_100;
@@ -279,6 +285,9 @@ export const createSoundCheck = (dependencies: SoundCheckDependencies) => {
       appContext: readContext(dependencies.getAppContext()),
       testContext: readContext(testContext),
       isMediaElementPlaying: running.has('media-element'),
+      trackPlayer: dependencies.getTrackPlayer(),
+      rule: dependencies.getRule(),
+      trackFallback: dependencies.getTrackFallback(),
     }),
     /** Leaves nothing running: every sound stopped and the microphone closed. */
     stopAll: () => {

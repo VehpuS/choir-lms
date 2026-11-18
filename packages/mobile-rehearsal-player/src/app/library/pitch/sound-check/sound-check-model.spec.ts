@@ -15,6 +15,13 @@ const base: SoundCheckReadout = {
   appContext: { state: 'running', sampleRate: 48_000, outputLatency: 0.12 },
   testContext: null,
   isMediaElementPlaying: false,
+  trackPlayer: 'engine-track',
+  rule: {
+    isMicrophoneOpen: true,
+    isRecordingToolOpen: false,
+    isAppHidden: false,
+  },
+  trackFallback: null,
 };
 
 describe('describeReadout', () => {
@@ -26,6 +33,9 @@ describe('describeReadout', () => {
       'App audio context: running, 48000 Hz, output latency 120 ms',
       'Test audio context: none',
       'Media element sound: off',
+      'Track player: web audio engine (single track)',
+      'Listening rule: microphone yes, recording tool no, app hidden no',
+      'Track could not be prepared: no',
     ]);
   });
 
@@ -44,6 +54,30 @@ describe('describeReadout', () => {
     assert.equal(lines[2], 'Capture: off');
     assert.equal(lines[3], 'App audio context: none');
     assert.equal(lines[5], 'Media element sound: playing');
+  });
+
+  it('says where the track is and why it stayed on the media element', () => {
+    const lines = describeReadout({
+      ...base,
+      trackPlayer: 'media-element',
+      rule: {
+        isMicrophoneOpen: true,
+        isRecordingToolOpen: true,
+        isAppHidden: true,
+      },
+      trackFallback: 'no-room',
+    });
+
+    assert.equal(lines[6], 'Track player: media element');
+    assert.equal(
+      lines[7],
+      'Listening rule: microphone yes, recording tool yes, app hidden yes',
+    );
+    assert.equal(lines[8], 'Track could not be prepared: no-room');
+    assert.equal(
+      describeReadout({ ...base, trackPlayer: 'engine-composite' })[6],
+      'Track player: web audio engine (composite)',
+    );
   });
 
   it('calls a silent capture silent', () => {

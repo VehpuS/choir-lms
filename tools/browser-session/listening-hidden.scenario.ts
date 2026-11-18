@@ -88,9 +88,11 @@ void runScenario({
       );
     }
 
-    if (!(await readAppIsPlaying(page))) {
-      throw new Error('hidden: the lock screen is not told the track plays');
-    }
+    // The lock screen state follows the player a moment after it changes.
+    await waitUntil(
+      () => readAppIsPlaying(page),
+      'hidden: the lock screen is not told the track plays',
+    );
 
     await waitUntil(
       async () =>

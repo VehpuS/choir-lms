@@ -3,6 +3,9 @@ import {
   getCompositeAudioContext,
   peekCompositeAudioContext,
 } from '../../composite/engine/create-web-composite-engine';
+import { getActiveEngineKind } from '../../composite/playback/active-composite';
+import { getListeningFallbackStore } from '../../playback/listening-engine/listening-fallback-state';
+import { getListeningRuleState } from '../../playback/listening-engine/listening-rule-state';
 import { getPcmSource } from '../pcm-source';
 import {
   createSoundCheck,
@@ -72,6 +75,17 @@ export const getSoundCheck = (): SoundCheck => {
     },
     isCapturing: () => webAudioSession.isCapturing(),
     microphone: getPcmSource(),
+    getTrackPlayer: () => {
+      const kind = getActiveEngineKind();
+
+      return kind === 'track'
+        ? 'engine-track'
+        : kind === 'composite'
+          ? 'engine-composite'
+          : 'media-element';
+    },
+    getRule: getListeningRuleState,
+    getTrackFallback: () => getListeningFallbackStore().get()?.reason ?? null,
   });
 
   return soundCheck;

@@ -92,6 +92,13 @@ const setup = (overrides: Partial<SoundCheckDependencies> = {}) => {
     getSessionType: () => 'auto',
     setSessionType: (type) => sessions.push(type),
     isCapturing: () => isCapturing,
+    getTrackPlayer: () => 'media-element',
+    getRule: () => ({
+      isMicrophoneOpen: isCapturing,
+      isRecordingToolOpen: false,
+      isAppHidden: false,
+    }),
+    getTrackFallback: () => null,
     microphone: {
       subscribe: async (subscriber) => {
         microphone.subscribers.push(subscriber);

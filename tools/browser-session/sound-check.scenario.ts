@@ -47,6 +47,14 @@ void runScenario({
     await waitForTrack(page, 'Alto Part').catch(() => undefined);
     await openSoundCheck(page);
     await shot('1-sound-check');
+    await waitUntil(
+      async () =>
+        (await readoutText(page)).includes('Track player: media element') &&
+        (await readoutText(page)).includes(
+          'Listening rule: microphone no, recording tool no, app hidden no',
+        ),
+      'the readout does not say where the track plays and what the rule reads',
+    );
     pass(
       'Settings > Microphone has a Sound check with its switches and readout',
     );
@@ -98,6 +106,11 @@ void runScenario({
           await readoutText(page),
         ),
       'the readout shows no capture',
+    );
+    await waitUntil(
+      async () =>
+        (await readoutText(page)).includes('Listening rule: microphone yes'),
+      'the listening rule did not see the microphone open',
     );
     pass(
       'The microphone opens through the shared capture and reports its rate and level',

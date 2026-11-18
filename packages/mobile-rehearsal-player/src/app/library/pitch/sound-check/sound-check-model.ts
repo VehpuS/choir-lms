@@ -32,6 +32,18 @@ export type ContextReading = {
   outputLatency?: number;
 };
 
+/** What the app's listening rule reads (clear-playback-while-listening design Decision 1). */
+export type RuleReading = {
+  isMicrophoneOpen: boolean;
+  isRecordingToolOpen: boolean;
+  isAppHidden: boolean;
+};
+
+export type TrackPlayerReading =
+  | 'media-element'
+  | 'engine-track'
+  | 'engine-composite';
+
 export type SoundCheckReadout = {
   sessionType: string | null;
   isCapturing: boolean;
@@ -39,7 +51,20 @@ export type SoundCheckReadout = {
   appContext: ContextReading | null;
   testContext: ContextReading | null;
   isMediaElementPlaying: boolean;
+  /** Which player has the track that is loaded, or the media element when none is. */
+  trackPlayer: TrackPlayerReading;
+  rule: RuleReading;
+  /** Why the track stayed on the media element, when it could not be prepared. */
+  trackFallback: string | null;
 };
+
+const TRACK_PLAYER_TEXT: Record<TrackPlayerReading, string> = {
+  'media-element': 'media element',
+  'engine-track': 'web audio engine (single track)',
+  'engine-composite': 'web audio engine (composite)',
+};
+
+const yesNo = (value: boolean) => (value ? 'yes' : 'no');
 
 const MS_PER_SECOND = 1000;
 
@@ -83,4 +108,7 @@ export const describeReadout = (readout: SoundCheckReadout): string[] => [
   `App audio context: ${formatContext(readout.appContext)}`,
   `Test audio context: ${formatContext(readout.testContext)}`,
   `Media element sound: ${readout.isMediaElementPlaying ? 'playing' : 'off'}`,
+  `Track player: ${TRACK_PLAYER_TEXT[readout.trackPlayer]}`,
+  `Listening rule: microphone ${yesNo(readout.rule.isMicrophoneOpen)}, recording tool ${yesNo(readout.rule.isRecordingToolOpen)}, app hidden ${yesNo(readout.rule.isAppHidden)}`,
+  `Track could not be prepared: ${readout.trackFallback ?? 'no'}`,
 ];
